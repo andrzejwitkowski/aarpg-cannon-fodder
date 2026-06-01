@@ -26,4 +26,7 @@ jobs:
 
       - name: Verify No Warnings
         run: |
-          godot --path aarpg --headless --quit 2>&1 | grep -qE "ERROR|WARNING" && exit 1 || exit 0
+          set -o pipefail
+          output=$(godot --path aarpg --headless --quit 2>&1)
+          echo "$output"
+          echo "$output" | grep -qE "ERROR|WARNING" && exit 1 || exit 0

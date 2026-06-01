@@ -45,9 +45,8 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	if velocity.x * velocity.x + velocity.z * velocity.z > 0.01:
-		var look_target := global_position + direction
-		look_target.y = global_position.y
-		look_at(look_target, Vector3.UP, rotation_speed * delta)
+		var target_yaw := atan2(-direction.x, -direction.z)
+		rotation.y = lerp_angle(rotation.y, target_yaw, rotation_speed * delta)
 
 	EventBus.character_moved.emit(global_position)
 

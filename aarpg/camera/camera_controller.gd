@@ -13,7 +13,7 @@ func _process(delta: float) -> void:
 		_target = null
 		return
 	var desired := _target.global_position + offset
-	global_position = global_position.lerp(desired, follow_speed * delta)
+	global_position = global_position.lerp(desired, clampf(follow_speed * delta, 0.0, 1.0))
 	if global_position.distance_squared_to(_target.global_position) > 0.01:
 		look_at(_target.global_position)
 
