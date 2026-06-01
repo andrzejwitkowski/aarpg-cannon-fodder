@@ -22,4 +22,5 @@ jobs:
 
       - name: Run Tests
         run: |
+          mkdir -p aarpg/reports
           godot --path aarpg --headless -s res://tools/ci_test_runner.gd
