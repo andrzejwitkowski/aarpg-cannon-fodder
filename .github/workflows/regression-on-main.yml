@@ -1,0 +1,28 @@
+name: Regression on Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: barichello/godot-ci@v1
+        with:
+          godot_version: 4.6.3
+          is_mono: false
+
+      - name: Run Full Regression
+        run: |
+          godot --path aarpg --headless -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --add res://tests --ignoreHeadlessMode
+
+      - name: Verify No Warnings
+        run: |
+          godot --path aarpg --headless --quit 2>&1 | grep -E "ERROR|WARNING" && exit 1 || exit 0

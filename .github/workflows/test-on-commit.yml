@@ -1,0 +1,24 @@
+name: Tests on Commit
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: barichello/godot-ci@v1
+        with:
+          godot_version: 4.6.3
+          is_mono: false
+
+      - name: Run Tests
+        run: |
+          godot --path aarpg --headless -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --add res://tests --ignoreHeadlessMode
