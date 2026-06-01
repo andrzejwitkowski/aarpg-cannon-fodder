@@ -20,7 +20,10 @@ jobs:
           chmod +x Godot_v4.6.3-stable_linux.x86_64
           sudo mv Godot_v4.6.3-stable_linux.x86_64 /usr/local/bin/godot
 
+      - name: Warm up Godot
+        run: |
+          godot --path aarpg --editor --headless --quit
+
       - name: Run Tests
         run: |
-          mkdir -p aarpg/reports
           godot --path aarpg --headless res://tools/test_runner.tscn
