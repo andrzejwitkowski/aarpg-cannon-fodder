@@ -13,11 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Godot
-        uses: barichello/godot-ci@v1
-        with:
-          godot_version: 4.6.3
-          is_mono: false
+      - name: Download Godot
+        run: |
+          wget -q "https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip"
+          unzip -q Godot_v4.6.3-stable_linux.x86_64.zip
+          chmod +x Godot_v4.6.3-stable_linux.x86_64
+          sudo mv Godot_v4.6.3-stable_linux.x86_64 /usr/local/bin/godot
 
       - name: Run Tests
         run: |
