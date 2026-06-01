@@ -15,7 +15,7 @@ jobs:
 
       - name: Download Godot
         run: |
-          wget -q "https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip"
+          wget -q "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip"
           unzip -q Godot_v4.6.3-stable_linux.x86_64.zip
           chmod +x Godot_v4.6.3-stable_linux.x86_64
           sudo mv Godot_v4.6.3-stable_linux.x86_64 /usr/local/bin/godot
@@ -23,4 +23,4 @@ jobs:
       - name: Run Tests
         run: |
           mkdir -p aarpg/reports
-          godot --path aarpg --headless -s res://tools/ci_test_runner.gd
+          godot --path aarpg --headless res://tools/test_runner.tscn
