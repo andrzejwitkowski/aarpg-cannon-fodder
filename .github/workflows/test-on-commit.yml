@@ -22,4 +22,4 @@ jobs:
 
       - name: Run Tests
         run: |
-          godot --path aarpg --headless -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd --add res://tests --ignoreHeadlessMode
+          godot --path aarpg --headless -s res://tools/ci_test_runner.gd
