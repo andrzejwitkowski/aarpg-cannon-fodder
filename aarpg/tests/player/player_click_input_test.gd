@@ -82,7 +82,7 @@ func test_pick_on_plane_reaches_mesh_edge() -> void:
 	var plane := ground.mesh as PlaneMesh
 	var edge_local := Vector3(plane.size.x * 0.5 - 0.5, 0.0, 0.0)
 	var edge_global: Vector3 = ground.global_transform * edge_local
-	var camera: Camera3D = scene.get_node("Camera3D")
+	var camera: Camera3D = scene.get_node(CameraRigPaths.camera_path_from_world())
 	var screen_pos: Vector2 = camera.unproject_position(edge_global)
 	var hit: Variant = click_input.pick_ground_from_screen(screen_pos)
 	assert_that(hit).is_not_null()
