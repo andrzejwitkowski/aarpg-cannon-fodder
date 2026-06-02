@@ -1,8 +1,8 @@
-[gd_scene format=3 uid="uid://d2qbqjfokn70x"]
+[gd_scene load_steps=6 format=3 uid="uid://d2qbqjfokn70x"]
 
 [ext_resource type="Script" uid="uid://k3aep2v4rgtw" path="res://player/player.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://brph767pb0wew" path="res://combat/hit_box/hit_box.tscn" id="2"]
-[ext_resource type="Script" path="res://player/player_click_input.gd" id="3"]
+[ext_resource type="Script" uid="uid://c26foqg4x2s5w" path="res://player/player_click_input.gd" id="3"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rkbax"]
 radius = 0.453125

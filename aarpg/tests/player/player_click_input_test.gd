@@ -27,7 +27,7 @@ func test_pick_ground_ignores_non_static_collider() -> void:
 	auto_free(root)
 	add_child(root)
 	var obstacle := CharacterBody3D.new()
-	obstacle.collision_layer = PhysicsLayers.PLAYER_BODY
+	obstacle.collision_layer = PhysicsLayers.WORLD
 	var collider := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
 	collider.shape = capsule
@@ -74,6 +74,12 @@ func test_click_ignores_sky_without_move() -> void:
 	var scene: CharacterBody3D = packed.instantiate()
 	auto_free(scene)
 	add_child(scene)
+	var camera := Camera3D.new()
+	camera.current = true
+	scene.add_child(camera)
+	camera.global_position = Vector3(0.0, 10.0, 10.0)
+	camera.look_at(scene.global_position)
+	await await_idle_frame()
 	var click_input: Node = scene.get_node("ClickInput")
 	var nav: NavigationAgent3D = scene.get_node("NavigationAgent3D")
 	var initial_target := nav.target_position
