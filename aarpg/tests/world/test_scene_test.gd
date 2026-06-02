@@ -18,11 +18,11 @@ func test_ground_node_exists() -> void:
 	auto_free(scene)
 	assert_bool(scene.has_node("NavigationRegion3D/Ground")).is_true()
 
-func test_camera_node_exists() -> void:
+func test_camera_rig_exists() -> void:
 	var packed := load(TEST_SCENE) as PackedScene
 	var scene := packed.instantiate()
 	auto_free(scene)
-	assert_bool(scene.has_node("Camera3D")).is_true()
+	assert_bool(scene.has_node(CameraRigPaths.camera_path_from_world())).is_true()
 
 func test_player_in_group() -> void:
 	var packed := load(TEST_SCENE) as PackedScene

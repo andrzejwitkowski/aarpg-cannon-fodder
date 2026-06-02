@@ -132,6 +132,9 @@ Inne skrypty używają bezpośrednio: `PlayerUtils.instance()`, `if node is HitB
 
 ## Scene conventions
 
+### Reusable scene instances over inline nodes
+Nowe systemy (kamera, UI, broń, rig postaci) dodawaj jako **osobne `.tscn` w domenie** i **instancjuj** w scenach poziomów — nie buduj hierarchii na sztywno w `world/*` ani w innych scenach testowych, chyba że to jednorazowy prototyp do natychmiastowego wyrzucenia.
+
 ### Generic scenes (HitBox pattern)
 Sceny generyczne NIE mają zahardkodowanych kształtów. Owner ustawia shape przez API:
 
