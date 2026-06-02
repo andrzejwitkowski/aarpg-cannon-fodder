@@ -16,6 +16,11 @@ var _is_moving_to_target: bool = false
 func _ready() -> void:
 	_target_position = global_position
 	hit_box.set_shape(collision_shape.shape)
+	call_deferred("_sync_navigation_agent")
+
+func _sync_navigation_agent() -> void:
+	await get_tree().physics_frame
+	navigation_agent.target_position = global_position
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -31,7 +36,7 @@ func _physics_process(delta: float) -> void:
 	elif _is_moving_to_target:
 		var next_point := navigation_agent.get_next_path_position()
 		direction = (next_point - global_position).normalized()
-		if global_position.distance_to(_target_position) < 0.5:
+		if _reached_move_target():
 			velocity.x = 0.0
 			velocity.z = 0.0
 			_is_moving_to_target = false
@@ -52,5 +57,12 @@ func _physics_process(delta: float) -> void:
 
 func move_to(target: Vector3) -> void:
 	navigation_agent.target_position = target
-	_target_position = target
+	_target_position = Vector3(target.x, global_position.y, target.z)
 	_is_moving_to_target = true
+
+func _reached_move_target() -> bool:
+	var offset := Vector2(
+		global_position.x - _target_position.x,
+		global_position.z - _target_position.z
+	)
+	return offset.length() < 0.5

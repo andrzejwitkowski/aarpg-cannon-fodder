@@ -8,6 +8,12 @@ func test_player_has_hitbox_child() -> void:
 	auto_free(scene)
 	assert_bool(scene.has_node("HitBox")).is_true()
 
+func test_player_has_click_input() -> void:
+	var packed := load(PLAYER_SCENE) as PackedScene
+	var scene := packed.instantiate()
+	auto_free(scene)
+	assert_bool(scene.has_node("ClickInput")).is_true()
+
 func test_player_has_navigation_agent() -> void:
 	var packed := load(PLAYER_SCENE) as PackedScene
 	var scene := packed.instantiate()
@@ -54,6 +60,16 @@ func test_move_to_sets_nav_target() -> void:
 	scene.move_to(target)
 	var nav: NavigationAgent3D = scene.get_node("NavigationAgent3D")
 	assert_vector(nav.target_position).is_equal(target)
+	assert_float(scene._target_position.y).is_equal(scene.global_position.y)
+
+func test_reached_move_target_uses_horizontal_distance() -> void:
+	var packed := load(PLAYER_SCENE) as PackedScene
+	var scene: CharacterBody3D = packed.instantiate()
+	auto_free(scene)
+	add_child(scene)
+	scene.global_position = Vector3(0.0, 4.0, 0.0)
+	scene._target_position = Vector3(0.4, 0.0, 0.0)
+	assert_bool(scene._reached_move_target()).is_true()
 
 func test_ready_sets_target_position() -> void:
 	var packed := load(PLAYER_SCENE) as PackedScene
