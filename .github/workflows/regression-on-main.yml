@@ -1,0 +1,36 @@
+name: Regression on Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Godot
+        run: |
+          wget -q "https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip"
+          unzip -q Godot_v4.6.3-stable_linux.x86_64.zip
+          chmod +x Godot_v4.6.3-stable_linux.x86_64
+          sudo mv Godot_v4.6.3-stable_linux.x86_64 /usr/local/bin/godot
+
+      - name: Warm up Godot
+        run: |
+          godot --path aarpg --editor --headless --quit
+
+      - name: Run Full Regression
+        run: |
+          godot --path aarpg --headless res://tools/test_runner.tscn
+
+      - name: Verify No Warnings
+        run: |
+          set -o pipefail
+          output=$(godot --path aarpg --headless --quit 2>&1)
+          echo "$output"
+          echo "$output" | grep -qE "ERROR|WARNING" && exit 1 || exit 0

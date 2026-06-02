@@ -66,3 +66,115 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+---
+
+# AARPG Cannon Fodder — Project Rules
+
+## Project structure (DDD)
+
+```
+aarpg/
+├── player/          # Gracz: CharacterBody3D, utils
+├── combat/          # Walka: hit_box, hurt_box, damage
+├── world/           # Świat: poziomy, teren, budynki
+├── enemies/         # Przeciwnicy
+├── weapons/         # Bronie
+├── projectiles/     # Pociski
+├── items/           # Przedmioty, loot
+├── ai/              # FSM, behavior tree, strategie
+├── camera/          # Kamera, follow, shake
+├── systems/         # Cross-cutting: EventBus, save, audio
+├── ui/              # HUD, inventory, dialog
+├── assets/          # textures/, models/, materials/, shaders/
+├── scripts/         # Narzędzia dev (mcp_interaction_server.gd)
+└── tests/           # gdUnit4 — lustro domen
+```
+
+Każdy nowy plik ląduje w odpowiedniej domenie, nie w płaskim `Scenes/` czy `scripts/`.
+
+## Godot 4.6 specifics
+
+- **Engine:** Godot 4.6.3, Forward+ renderer, Jolt Physics, d3d12 na Windows
+- **GDScript:** `extends`, `class_name`, `@export`, `@onready`, type hints
+- **Sceny:** `[gd_scene format=3]`, `load_steps`, `ext_resource`/`sub_resource`
+- **UID:** Godot 4.4+ używa `.uid` plików — nie twórz ich ręcznie, edytor generuje
+- **Autoloady:** Dodawaj przez `project.godot` → `[autoload]` z `*` prefixem dla `PROCESS_MODE_ALWAYS`
+- **Input Map:** `manage_input_map` w godot-mcp lub edytor UI
+- **Testy:** gdUnit4 v6.2.0, `extends GdUnitTestSuite`
+
+## Communication patterns
+
+### EventBus (systems/event_bus.gd — autoload)
+Globalny bus sygnałów. Każda domena emituje i subskrybuje przez `EventBus`:
+
+```gdscript
+# Emitowanie
+EventBus.character_moved.emit(global_position)
+EventBus.hit_received.emit(target, damage)
+
+# Subskrypcja
+EventBus.character_moved.connect(_on_character_moved)
+```
+
+### class_name dla dostępu globalnego
+Generyczne komponenty rejestrują się przez `class_name` zamiast autoloadu:
+
+```gdscript
+# combat/hit_box/hit_box.gd
+class_name HitBox extends Area3D
+
+# player/player_utils.gd
+class_name PlayerUtils extends RefCounted
+```
+
+Inne skrypty używają bezpośrednio: `PlayerUtils.instance()`, `if node is HitBox`.
+
+## Scene conventions
+
+### Generic scenes (HitBox pattern)
+Sceny generyczne NIE mają zahardkodowanych kształtów. Owner ustawia shape przez API:
+
+```gdscript
+# hit_box.gd — NIE ma shape w .tscn
+func set_shape(shape: Shape3D) -> void:
+    $CollisionShape3D.shape = shape
+
+# player.gd — owner ustawia shape w _ready()
+hit_box.set_shape(hitbox_shape)
+```
+
+### Parameters in editor, not hardcoded
+Wymiary, prędkości, offsety — wszystko jako `@export var` z sensownym defaultem:
+
+```gdscript
+@export var hitbox_radius: float = 0.4
+@export var hitbox_height: float = 1.8
+```
+
+## PlayerUtils (player/player_utils.gd)
+Zawsze używaj `PlayerUtils` zamiast `get_tree().get_nodes_in_group("player")`:
+
+```gdscript
+PlayerUtils.instance()           # → CharacterBody3D | null
+PlayerUtils.global_position()    # → Vector3
+```
+
+## Code quality rules
+
+- **Żaden plik .gd nie może mieć >500 linii** — dziel na mniejsze moduły zanim przekroczysz
+- **Brak hardkodowanych wartości** w generycznych komponentach — wszystko `@export`
+- **Brak komentarzy** — kod mówi sam za siebie. Jeśli potrzebujesz komentarza, nazwij lepiej zmienną
+- **Brak `pass` w pustych blokach** — usuń pustą metodę
+- **Jeden `@export_category` na grupę zmiennych** (Physics, Collision, Movement)
+- **Sygnały przez EventBus** dla komunikacji między domenami; sygnały lokalne dla komunikacji wewnątrz domeny
+- **Sprawdzaj `is_instance_valid()`** przy referencjach do node'ów które mogą być zwolnione
+- **`_physics_process`** dla ruchu, **`_process`** dla kamery/UI
+
+## Verifications
+
+Przed oznaczeniem zadania jako gotowe:
+```bash
+& "C:\Users\Andrz\OneDrive\Desktop\Godot_v4.6.3-stable_win64.exe" --path "aarpg" --headless --quit 2>&1 | Select-String "ERROR|WARNING"
+```
+Output musi być pusty.
