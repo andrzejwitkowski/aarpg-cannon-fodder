@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://d2qbqjfokn70x"]
+[gd_scene format=3 uid="uid://d2qbqjfokn70x"]
 
 [ext_resource type="Script" uid="uid://k3aep2v4rgtw" path="res://player/player.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://brph767pb0wew" path="res://combat/hit_box/hit_box.tscn" id="2"]
@@ -28,5 +28,5 @@ mesh = SubResource("CapsuleMesh_1")
 
 [node name="HitBox" parent="." unique_id=1199530781 instance=ExtResource("2")]
 
-[node name="ClickInput" type="Node" parent="."]
+[node name="ClickInput" type="Node" parent="." unique_id=1258959612]
 script = ExtResource("3")

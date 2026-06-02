@@ -69,6 +69,25 @@ func test_click_sets_navigation_target() -> void:
 	assert_vector(nav.target_position).is_not_equal(initial_target)
 	assert_float(player._target_position.y).is_equal(player.global_position.y)
 
+func test_pick_on_plane_reaches_mesh_edge() -> void:
+	var packed := load(WORLD_SCENE) as PackedScene
+	var scene := packed.instantiate()
+	auto_free(scene)
+	add_child(scene)
+	await await_idle_frame()
+	await get_tree().physics_frame
+	var player: CharacterBody3D = scene.get_node("Player")
+	var ground: MeshInstance3D = scene.get_node("NavigationRegion3D/Ground")
+	var click_input: Node = player.get_node("ClickInput")
+	var plane := ground.mesh as PlaneMesh
+	var edge_local := Vector3(plane.size.x * 0.5 - 0.5, 0.0, 0.0)
+	var edge_global: Vector3 = ground.global_transform * edge_local
+	var camera: Camera3D = scene.get_node("Camera3D")
+	var screen_pos: Vector2 = camera.unproject_position(edge_global)
+	var hit: Variant = click_input.pick_ground_from_screen(screen_pos)
+	assert_that(hit).is_not_null()
+	assert_vector(hit as Vector3).is_equal_approx(edge_global, Vector3(1.5, 0.5, 1.5))
+
 func test_click_ignores_sky_without_move() -> void:
 	var packed := load(PLAYER_SCENE) as PackedScene
 	var scene: CharacterBody3D = packed.instantiate()

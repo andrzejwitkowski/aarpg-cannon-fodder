@@ -51,11 +51,18 @@ func test_ground_on_world_physics_layer() -> void:
 	var ground_body: StaticBody3D = scene.get_node("NavigationRegion3D/Ground/GroundStaticBody")
 	assert_int(ground_body.collision_layer).is_equal(PhysicsLayers.WORLD)
 
-func test_navigation_mesh_has_polygons_after_ready() -> void:
+func test_navigation_region_uses_editor_bake_groups() -> void:
 	var packed := load(TEST_SCENE) as PackedScene
 	var scene := packed.instantiate()
 	auto_free(scene)
-	add_child(scene)
-	await await_idle_frame()
+	var region: NavigationRegion3D = scene.get_node("NavigationRegion3D")
+	var nav_mesh: NavigationMesh = region.navigation_mesh
+	assert_int(nav_mesh.geometry_source_geometry_mode).is_equal(2)
+	assert_str(nav_mesh.geometry_source_group_name).is_equal("navigation_mesh")
+
+func test_navigation_mesh_baked_in_scene() -> void:
+	var packed := load(TEST_SCENE) as PackedScene
+	var scene := packed.instantiate()
+	auto_free(scene)
 	var region: NavigationRegion3D = scene.get_node("NavigationRegion3D")
 	assert_int(region.navigation_mesh.get_polygon_count()).is_greater(0)
