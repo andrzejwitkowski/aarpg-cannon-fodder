@@ -15,7 +15,7 @@ func attack(context: EnemyContext) -> void:
 	_perform_attack(context)
 
 func _perform_attack(_context: EnemyContext) -> void:
-	pass
+	return
 
 func can_attack() -> bool:
 	return _cooldown_left <= 0.0
