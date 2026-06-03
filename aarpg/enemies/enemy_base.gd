@@ -21,7 +21,7 @@ func _ready() -> void:
 	if collision != null and collision.shape != null:
 		hurt_box.set_shape(collision.shape)
 	hit_flash.setup(mesh)
-	hurt_box.hurt_received.connect(_on_hurt_received)
+	EventBus.enemy_hit.connect(_on_enemy_hit)
 	fsm.setup(self, context)
 	_equip_weapons()
 
@@ -35,8 +35,14 @@ func play_animation(anim_name: StringName) -> void:
 func trigger_hit_flash() -> void:
 	hit_flash.trigger()
 
-func _on_hurt_received(by: Node, damage: float) -> void:
+func _on_enemy_hit(enemy: Node, by: Node, damage: float) -> void:
+	if enemy != self:
+		return
 	fsm.notify_hurt(by, damage)
+
+func _exit_tree() -> void:
+	if EventBus.enemy_hit.is_connected(_on_enemy_hit):
+		EventBus.enemy_hit.disconnect(_on_enemy_hit)
 
 func _equip_weapons() -> void:
 	if definition == null or weapon_mount == null:

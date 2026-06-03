@@ -1,8 +1,6 @@
 class_name HurtBox
 extends Area3D
 
-signal hurt_received(by: Node, damage: float)
-
 @export_category("Combat")
 @export var hit_cooldown: float = 0.35
 
@@ -38,11 +36,11 @@ func _on_body_entered(body: Node3D) -> void:
 func _emit_hurt(by: Node, damage: float) -> void:
 	if _cooldown_left > 0.0:
 		return
-	_cooldown_left = hit_cooldown
-	hurt_received.emit(by, damage)
 	var enemy := _enemy_root()
-	if enemy != null:
-		EventBus.enemy_hit.emit(enemy, by, damage)
+	if enemy == null:
+		return
+	_cooldown_left = hit_cooldown
+	EventBus.enemy_hit.emit(enemy, by, damage)
 
 func _enemy_root() -> Node3D:
 	var node: Node = self
