@@ -1,9 +1,11 @@
 class_name PlayerUtils
 extends RefCounted
 
+const GROUP := &"player"
+
 static func instance() -> CharacterBody3D:
 	var tree := Engine.get_main_loop() as SceneTree
-	var players := tree.get_nodes_in_group("player")
+	var players := tree.get_nodes_in_group(GROUP)
 	return players[0] if players.size() > 0 else null
 
 static func global_position() -> Vector3:

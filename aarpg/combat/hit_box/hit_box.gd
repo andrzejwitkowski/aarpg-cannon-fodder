@@ -4,6 +4,7 @@ extends Area3D
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 
 func _ready() -> void:
+	collision_mask = PhysicsLayers.COMBAT_TARGET_MASK
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
 
