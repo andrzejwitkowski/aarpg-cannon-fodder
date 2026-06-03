@@ -106,16 +106,26 @@ Każdy nowy plik ląduje w odpowiedniej domenie, nie w płaskim `Scenes/` czy `s
 ## Communication patterns
 
 ### EventBus (systems/event_bus.gd — autoload)
-Globalny bus sygnałów. Każda domena emituje i subskrybuje przez `EventBus`:
+Globalny bus sygnałów dla komunikacji **między domenami** (player ↔ combat ↔ enemies ↔ ui). Każda domena emituje i subskrybuje przez `EventBus`:
 
 ```gdscript
 # Emitowanie
 EventBus.character_moved.emit(global_position)
-EventBus.hit_received.emit(target, damage)
+EventBus.enemy_hit.emit(enemy, by, damage)
 
 # Subskrypcja
 EventBus.character_moved.connect(_on_character_moved)
 ```
+
+**Nie rozrzucaj `signal` po plikach domen** (`hurt_received`, `weapon_fired` na losowych Node) — to utrudnia śledzenie przepływu i duplikuje EventBus.
+
+| Zakres | Gdzie |
+|--------|--------|
+| UI, loot, audio, quest, save | `EventBus` (autoload) |
+| Wyłącznie wewnątrz jednego węzła / sceny (parent ↔ child) | bezpośrednie wywołanie metody lub sygnał **tylko** na root tej sceny |
+| FSM + AI jednego wroga | `EnemyContext` (dane) + metody hosta FSM; opcjonalnie w przyszłości wąski `EnemySignals` / bus pod `ai/`, **nie** globalny autoload na każdy stan |
+
+Przykład złamania reguły: `HurtBox.signal hurt_received` + `EventBus.enemy_hit` naraz — wybierz jedną ścieżkę integracji (preferowany: `EventBus` między domenami, orchestrator `enemy_base` woła FSM lokalnie).
 
 ### class_name dla dostępu globalnego
 Generyczne komponenty rejestrują się przez `class_name` zamiast autoloadu:

@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://d2qbqjfokn70x" path="res://player/player.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://camera/camera_rig.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://enemies/types/dummy/dummy_enemy.tscn" id="3"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_world"]
 vertices = PackedVector3Array(-23.478249, 0.45056367, -14.494433, -23.478249, 0.45056367, 24.505566, 15.521751, 0.45056367, 24.505566, 15.521751, 0.45056367, -14.494433)
@@ -58,3 +59,6 @@ shadow_enabled = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.058925, 1.797893)
 
 [node name="CameraPivot" parent="." instance=ExtResource("2")]
+
+[node name="DummyEnemy" parent="." instance=ExtResource("3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.8, 2)
