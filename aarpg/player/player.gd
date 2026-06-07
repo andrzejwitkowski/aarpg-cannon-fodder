@@ -6,16 +6,13 @@ extends CharacterBody3D
 @export var gravity: float = 9.8
 
 @onready var navigation_agent: NavigationAgent3D = $NavigationAgent3D
-@onready var hit_box: HitBox = $HitBox
-
-@onready var collision_shape: CollisionShape3D = $CollisionShape3D
+@onready var club: Club = $Club
 
 var _target_position: Vector3
 var _is_moving_to_target: bool = false
 
 func _ready() -> void:
 	_target_position = global_position
-	hit_box.set_shape(collision_shape.shape)
 	_sync_navigation_agent()
 
 func _sync_navigation_agent() -> void:
@@ -50,6 +47,9 @@ func _physics_process(delta: float) -> void:
 		velocity.z = 0.0
 
 	move_and_slide()
+
+	if Input.is_action_just_pressed("attack"):
+		club.swing()
 
 	if velocity.x * velocity.x + velocity.z * velocity.z > 0.01:
 		var target_yaw := atan2(-direction.x, -direction.z)
