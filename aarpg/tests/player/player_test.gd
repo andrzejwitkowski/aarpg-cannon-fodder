@@ -2,11 +2,11 @@ extends GdUnitTestSuite
 
 const PLAYER_SCENE = "res://player/player.tscn"
 
-func test_player_has_hitbox_child() -> void:
+func test_player_has_club() -> void:
 	var packed := load(PLAYER_SCENE) as PackedScene
 	var scene := packed.instantiate()
 	auto_free(scene)
-	assert_bool(scene.has_node("HitBox")).is_true()
+	assert_bool(scene.has_node("Club")).is_true()
 
 func test_player_has_click_input() -> void:
 	var packed := load(PLAYER_SCENE) as PackedScene
@@ -78,11 +78,9 @@ func test_ready_sets_target_position() -> void:
 	add_child(scene)
 	assert_vector(scene._target_position).is_equal(scene.global_position)
 
-func test_hitbox_shape_copied_from_collision() -> void:
+func test_club_centered_on_capsule() -> void:
 	var packed := load(PLAYER_SCENE) as PackedScene
 	var scene: CharacterBody3D = packed.instantiate()
 	auto_free(scene)
-	add_child(scene)
-	var hitbox: HitBox = scene.get_node("HitBox")
-	var body_collider: CollisionShape3D = scene.get_node("CollisionShape3D")
-	assert_object(hitbox.get_node("CollisionShape3D").shape).is_same(body_collider.shape)
+	var club: Club = scene.get_node("Club")
+	assert_float(club.transform.origin.y).is_equal_approx(0.9, 0.01)

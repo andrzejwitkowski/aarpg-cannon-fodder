@@ -39,7 +39,7 @@ func test_world_scene_has_dummy_enemy() -> void:
 	auto_free(scene)
 	assert_bool(scene.has_node("DummyEnemy")).is_true()
 
-func test_player_hit_box_overlap_enters_hit_state() -> void:
+func test_club_swing_hits_enemy() -> void:
 	var dummy_packed := load(DUMMY_SCENE) as PackedScene
 	var player_packed := load(PLAYER_SCENE) as PackedScene
 	var enemy: EnemyBase = dummy_packed.instantiate()
@@ -51,11 +51,13 @@ func test_player_hit_box_overlap_enters_hit_state() -> void:
 	add_child(root)
 	root.add_child(enemy)
 	root.add_child(player)
-	enemy.global_position = Vector3(6.0, 0.8, 2.0)
-	player.global_position = enemy.global_position
-	await get_tree().physics_frame
-	await get_tree().physics_frame
-	await get_tree().physics_frame
+	enemy.global_position = Vector3(0.0, 0.0, 0.0)
+	player.global_position = Vector3(0.0, 0.0, 0.55)
+	player.look_at(enemy.global_position, Vector3.UP)
+	var club: Club = player.get_node("Club")
+	club.swing()
+	for _i in 12:
+		await get_tree().physics_frame
 	assert_str(enemy.fsm.current_state_name).is_equal(EnemyFsm.STATE_HIT)
 
 func test_hurt_notifies_fsm() -> void:

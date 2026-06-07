@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://d2qbqjfokn70x"]
 
 [ext_resource type="Script" uid="uid://k3aep2v4rgtw" path="res://player/player.gd" id="1"]
-[ext_resource type="PackedScene" uid="uid://brph767pb0wew" path="res://combat/hit_box/hit_box.tscn" id="2"]
 [ext_resource type="Script" uid="uid://c26foqg4x2s5w" path="res://player/player_click_input.gd" id="3"]
+[ext_resource type="PackedScene" path="res://weapons/kinds/club/club.tscn" id="4"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rkbax"]
 radius = 0.453125
@@ -26,7 +26,8 @@ mesh = SubResource("CapsuleMesh_1")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1647850053]
 
-[node name="HitBox" parent="." unique_id=1199530781 instance=ExtResource("2")]
+[node name="Club" parent="." instance=ExtResource("4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 
 [node name="ClickInput" type="Node" parent="." unique_id=1258959612]
 script = ExtResource("3")
