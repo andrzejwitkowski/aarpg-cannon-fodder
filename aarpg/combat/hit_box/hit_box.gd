@@ -5,9 +5,13 @@ extends Area3D
 
 func _ready() -> void:
 	collision_mask = PhysicsLayers.COMBAT_TARGET_MASK
-	monitoring = false
+	set_active(false)
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
+
+func set_active(active: bool) -> void:
+	monitoring = active
+	collision_layer = PhysicsLayers.COMBAT if active else 0
 
 func set_shape(shape: Shape3D) -> void:
 	if collision_shape != null:

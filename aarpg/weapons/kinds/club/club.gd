@@ -27,7 +27,7 @@ func swing() -> void:
 	if _swinging:
 		return
 	_swinging = true
-	hit_box.monitoring = true
+	hit_box.set_active(true)
 	mesh.set_surface_override_material(0, _red)
 	_flash_left = flash_duration
 	var y0 := rotation_degrees.y
@@ -46,7 +46,7 @@ func _on_hit_area(area: Area3D) -> void:
 
 func _finish_swing() -> void:
 	_swinging = false
-	hit_box.monitoring = false
+	hit_box.set_active(false)
 
 func _process(delta: float) -> void:
 	if _flash_left <= 0.0:

@@ -59,7 +59,7 @@ func test_hit_box_overlap_emits_enemy_hit() -> void:
 	shape.radius = 0.6
 	enemy.hurt_box.set_shape(shape)
 	hit_box.set_shape(shape)
-	hit_box.monitoring = true
+	hit_box.set_active(true)
 	enemy.global_position = Vector3.ZERO
 	attacker.global_position = Vector3.ZERO
 	var hit_count := [0]
