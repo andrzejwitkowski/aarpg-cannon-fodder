@@ -1,9 +1,7 @@
-[gd_scene format=3 uid="uid://bjt51vf1sppfo"]
+[gd_scene load_steps=5 format=3 uid="uid://bjt51vf1sppfo"]
 
 [ext_resource type="Script" uid="uid://umlkhgolibhq" path="res://weapons/kinds/club/club.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://brph767pb0wew" path="res://combat/hit_box/hit_box.tscn" id="2"]
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_giy56"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_club"]
 top_radius = 0.04
@@ -13,26 +11,13 @@ height = 0.55
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_club"]
 albedo_color = Color(0.35, 0.22, 0.12, 1)
 
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_mpm17"]
-height = 0.55407715
-radius = 0.07
-
-[node name="Club" type="Node3D" unique_id=946442752]
+[node name="Club" type="Node3D"]
 script = ExtResource("1")
-hit_box_shape = SubResource("CylinderShape3D_giy56")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=554722478]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, -0.28)
 mesh = SubResource("CylinderMesh_club")
 surface_material_override/0 = SubResource("StandardMaterial3D_club")
 
-[node name="HitBox" parent="." unique_id=17512741 instance=ExtResource("2")]
+[node name="HitBox" parent="." instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5)
-collision_layer = 0
-collision_mask = 11
-monitoring = false
-shape = null
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HitBox" unique_id=13459240]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -9.543191e-09, 0.21832275)
-shape = SubResource("CylinderShape3D_mpm17")

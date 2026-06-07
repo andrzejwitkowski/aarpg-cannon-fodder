@@ -4,8 +4,7 @@ class_name Club extends Node3D
 @export var swing_duration: float = 0.2
 @export var swing_degrees: float = 100.0
 @export var flash_duration: float = 0.1
-
-@export var hit_box_shape: Shape3D
+@export var hit_shape_size: Vector3 = Vector3(0.2, 0.2, 0.35)
 
 @onready var hit_box: HitBox = $HitBox
 @onready var mesh: MeshInstance3D = $MeshInstance3D
@@ -19,6 +18,9 @@ func _ready() -> void:
 	_red = StandardMaterial3D.new()
 	_red.albedo_color = Color.RED
 	_base_mat = mesh.get_active_material(0)
+	var box := BoxShape3D.new()
+	box.size = hit_shape_size
+	hit_box.set_shape(box)
 	hit_box.area_entered.connect(_on_hit_area)
 
 func swing() -> void:

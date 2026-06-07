@@ -26,7 +26,7 @@ mesh = SubResource("CapsuleMesh_1")
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1647850053]
 
 [node name="Club" parent="." unique_id=2053844500 instance=ExtResource("4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06522727, -0.015281439, -0.32617414)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 
 [node name="ClickInput" type="Node" parent="." unique_id=1258959612]
 script = ExtResource("3")
