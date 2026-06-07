@@ -23,7 +23,7 @@ func set_shape(shape: Shape3D) -> void:
 func _on_area_entered(area: Area3D) -> void:
 	if not area is HitBox:
 		return
-	var attacker := area.get_parent()
+	var attacker := PlayerUtils.from_node(area)
 	if attacker == null:
 		return
 	_emit_hurt(attacker, 0.0)

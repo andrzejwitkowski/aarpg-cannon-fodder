@@ -14,21 +14,11 @@ func set_shape(shape: Shape3D) -> void:
 		collision_shape.shape = shape
 
 func _on_body_entered(body: Node3D) -> void:
-	if not monitoring:
-		return
 	EventBus.hit_received.emit(_attacker(), body, 0.0)
 
 func _on_area_entered(area: Area3D) -> void:
-	if not monitoring:
-		return
-	if area is HurtBox:
-		print('Trafiono!')
 	EventBus.hit_received.emit(_attacker(), area, 0.0)
 
 func _attacker() -> Node:
-	var node: Node = self
-	while node != null:
-		if node.is_in_group(PlayerUtils.GROUP):
-			return node
-		node = node.get_parent()
-	return get_parent()
+	var player := PlayerUtils.from_node(self)
+	return player if player else get_parent()

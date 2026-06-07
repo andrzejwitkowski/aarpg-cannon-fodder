@@ -14,7 +14,6 @@ height = 1.8
 
 [node name="Player" type="CharacterBody3D" unique_id=156193920 groups=["player"]]
 collision_layer = 4
-collision_mask = 1
 script = ExtResource("1")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1182396896]
@@ -26,7 +25,7 @@ mesh = SubResource("CapsuleMesh_1")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1647850053]
 
-[node name="Club" parent="." instance=ExtResource("4")]
+[node name="Club" parent="." unique_id=2053844500 instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 
 [node name="ClickInput" type="Node" parent="." unique_id=1258959612]

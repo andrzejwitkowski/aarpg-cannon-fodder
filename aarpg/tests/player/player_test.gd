@@ -32,6 +32,13 @@ func test_player_has_mesh() -> void:
 	auto_free(scene)
 	assert_bool(scene.has_node("MeshInstance3D")).is_true()
 
+func test_from_node_finds_player_ancestor() -> void:
+	var packed := load(PLAYER_SCENE) as PackedScene
+	var player: CharacterBody3D = packed.instantiate()
+	auto_free(player)
+	var hit_box: HitBox = player.get_node("Club/HitBox")
+	assert_object(PlayerUtils.from_node(hit_box)).is_same(player)
+
 func test_player_is_in_player_group() -> void:
 	var packed := load(PLAYER_SCENE) as PackedScene
 	var scene := packed.instantiate()
