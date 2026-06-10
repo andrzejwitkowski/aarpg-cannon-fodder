@@ -77,6 +77,7 @@ func test_click_spawns_click_marker() -> void:
 	await await_idle_frame()
 	await get_tree().physics_frame
 	await get_tree().physics_frame
+	await get_tree().physics_frame
 	var player: CharacterBody3D = scene.get_node("Player")
 	var nav: NavigationAgent3D = player.get_node("NavigationAgent3D")
 	var click_input: Node = player.get_node("ClickInput")
@@ -101,6 +102,7 @@ func test_double_click_keeps_single_marker() -> void:
 	auto_free(scene)
 	add_child(scene)
 	await await_idle_frame()
+	await get_tree().physics_frame
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	var click_input: Node = scene.get_node("Player/ClickInput")
