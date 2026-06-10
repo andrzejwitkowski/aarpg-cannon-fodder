@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://cmlscj53pnd41"]
+
+[ext_resource type="Script" uid="uid://cgx5q4qeo37vx" path="res://player/click_marker/click_marker.gd" id="1"]
+[ext_resource type="Shader" uid="uid://cwlvnew44w0jl" path="res://assets/shaders/click_marker.gdshader" id="2"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_click_marker"]
+render_priority = 0
+shader = ExtResource("2")
+shader_parameter/color_center = Color(0.2, 0.8, 1, 0.9)
+shader_parameter/color_edge = Color(0.1, 0.4, 0.8, 0)
+shader_parameter/expand = 0.0
+shader_parameter/dissolve = 0.0
+shader_parameter/softness = 0.08
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_click_marker"]
+size = Vector2(1, 1)
+
+[node name="ClickMarker" type="Node3D" unique_id=1346179290]
+script = ExtResource("1")
+color_center = Color(0.9254902, 0.86838233, 0.011764723, 0.9019608)
+color_edge = Color(0.8515625, 0.023284912, 0.0794394, 0.91764706)
+max_radius = 1.0
+ground_offset = 0.001
+duration = 0.5
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1744306125]
+material_override = SubResource("ShaderMaterial_click_marker")
+mesh = SubResource("PlaneMesh_click_marker")

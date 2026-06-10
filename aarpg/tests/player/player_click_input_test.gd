@@ -69,6 +69,51 @@ func test_click_sets_navigation_target() -> void:
 	assert_vector(nav.target_position).is_not_equal(initial_target)
 	assert_float(player._target_position.y).is_equal(player.global_position.y)
 
+func test_click_spawns_click_marker() -> void:
+	var packed := load(WORLD_SCENE) as PackedScene
+	var scene := packed.instantiate()
+	auto_free(scene)
+	add_child(scene)
+	await await_idle_frame()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var player: CharacterBody3D = scene.get_node("Player")
+	var nav: NavigationAgent3D = player.get_node("NavigationAgent3D")
+	var click_input: Node = player.get_node("ClickInput")
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	event.position = get_viewport().get_visible_rect().size * 0.5
+	click_input._unhandled_input(event)
+	await await_idle_frame()
+	var marker: ClickMarker = click_input._active_marker
+	assert_that(marker).is_not_null()
+	var expected := Vector3(
+		nav.target_position.x,
+		nav.target_position.y + marker.ground_offset,
+		nav.target_position.z
+	)
+	assert_vector(marker.global_position).is_equal(expected)
+
+func test_double_click_keeps_single_marker() -> void:
+	var packed := load(WORLD_SCENE) as PackedScene
+	var scene := packed.instantiate()
+	auto_free(scene)
+	add_child(scene)
+	await await_idle_frame()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var click_input: Node = scene.get_node("Player/ClickInput")
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	event.position = get_viewport().get_visible_rect().size * 0.5
+	click_input._unhandled_input(event)
+	click_input._unhandled_input(event)
+	assert_int(_count_click_markers(scene)).is_equal(1)
+
 func test_pick_on_plane_reaches_mesh_edge() -> void:
 	var packed := load(WORLD_SCENE) as PackedScene
 	var scene := packed.instantiate()
@@ -109,3 +154,10 @@ func test_click_ignores_sky_without_move() -> void:
 	click_input._unhandled_input(event)
 	assert_bool(scene._is_moving_to_target).is_false()
 	assert_vector(nav.target_position).is_equal(initial_target)
+	assert_int(_count_click_markers(scene)).is_equal(0)
+
+func _count_click_markers(node: Node) -> int:
+	var count := 1 if node is ClickMarker else 0
+	for child: Node in node.get_children():
+		count += _count_click_markers(child)
+	return count

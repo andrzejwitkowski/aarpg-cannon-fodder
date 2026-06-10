@@ -1,6 +1,7 @@
 extends Node
 
 const GROUND_PICK_GROUP := &"ground_pick"
+const CLICK_MARKER_SCENE := preload("res://player/click_marker/click_marker.tscn")
 
 @export_category("Click navigation")
 @export var click_ray_length: float = 1000.0
@@ -9,6 +10,7 @@ const GROUND_PICK_GROUP := &"ground_pick"
 
 var _player: CharacterBody3D
 var _nav_snap_max_distance_sq: float
+var _active_marker: ClickMarker
 
 func _ready() -> void:
 	_player = get_parent() as CharacterBody3D
@@ -25,8 +27,19 @@ func _unhandled_input(event: InputEvent) -> void:
 	var hit: Variant = pick_ground_from_screen(mouse.position)
 	if hit == null:
 		return
-	_player.move_to(_navigation_target_from_hit(hit as Vector3))
+	var target := _navigation_target_from_hit(hit as Vector3)
+	_player.move_to(target)
+	_spawn_click_marker(target)
 	get_viewport().set_input_as_handled()
+
+func _spawn_click_marker(world_position: Vector3) -> void:
+	var world_root := _player.get_parent()
+	if world_root == null:
+		return
+	if _active_marker == null or not is_instance_valid(_active_marker):
+		_active_marker = CLICK_MARKER_SCENE.instantiate() as ClickMarker
+		world_root.add_child(_active_marker)
+	_active_marker.play(world_position)
 
 func pick_ground_from_screen(screen_pos: Vector2) -> Variant:
 	var viewport := get_viewport()
