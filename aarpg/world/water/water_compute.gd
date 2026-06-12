@@ -62,6 +62,7 @@ func setup(params: WaterParams) -> bool:
 	_dispatch_xy = Vector2i(maxi(1, n / 8), maxi(1, n / 8))
 	_alloc_buffers()
 	if not _load_pipelines():
+		teardown()
 		return false
 	_build_uniform_sets(params)
 	ready = true
@@ -198,7 +199,12 @@ func _load_pipelines() -> bool:
 	shader_fft = _shader(SHADER_DIR + "fft_butterfly.glsl")
 	shader_permute = _shader(SHADER_DIR + "fft_permute.glsl")
 	shader_assemble = _shader(SHADER_DIR + "assemble_maps.glsl")
-	if not shader_init.is_valid() or not shader_fft.is_valid():
+	if not shader_init.is_valid() \
+	or not shader_conj.is_valid() \
+	or not shader_time.is_valid() \
+	or not shader_fft.is_valid() \
+	or not shader_permute.is_valid() \
+	or not shader_assemble.is_valid():
 		return false
 	pipe_init = rd.compute_pipeline_create(shader_init)
 	pipe_conj = rd.compute_pipeline_create(shader_conj)
@@ -206,6 +212,13 @@ func _load_pipelines() -> bool:
 	pipe_fft = rd.compute_pipeline_create(shader_fft)
 	pipe_permute = rd.compute_pipeline_create(shader_permute)
 	pipe_assemble = rd.compute_pipeline_create(shader_assemble)
+	if not pipe_init.is_valid() \
+	or not pipe_conj.is_valid() \
+	or not pipe_time.is_valid() \
+	or not pipe_fft.is_valid() \
+	or not pipe_permute.is_valid() \
+	or not pipe_assemble.is_valid():
+		return false
 	return true
 
 func _shader(path: String) -> RID:

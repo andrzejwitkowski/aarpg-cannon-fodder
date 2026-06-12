@@ -40,7 +40,7 @@ float wave_frequency_derivative(float k, float g, float depth) {
 	float th = tanh(min(k * depth, 20.0));
 	float ch = cosh(k * depth);
 	float f = wave_frequency(k, g, depth);
-	return (g * depth / (ch * ch) * k + th) * g / f / 2.0;
+	return (k * depth / (ch * ch) + th) * g / f / 2.0;
 }
 
 float normalisation_factor(float s) {

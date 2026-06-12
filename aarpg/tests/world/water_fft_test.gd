@@ -10,7 +10,7 @@ func test_fft_impulse_and_sinusoid() -> void:
 	var compute := WaterCompute.new()
 	assert_bool(compute.setup(params)).is_true()
 	var result: Dictionary = compute.validate_fft()
-	assert_bool(result.pass).override_failure_message("FFT validation failed err1=%s err2=%s" % [result.err1, result.err2]).is_true()
+	assert_bool(result["pass"]).override_failure_message("FFT validation failed err1=%s err2=%s" % [result.err1, result.err2]).is_true()
 	compute.teardown()
 
 func test_gaussian_noise_size() -> void:
@@ -23,3 +23,10 @@ func test_water_params_resource() -> void:
 	var uniforms := params.fill_spectrum_uniforms()
 	assert_float(uniforms[0]).is_equal_approx(9.81, 0.001)
 	assert_float(uniforms[2]).is_greater(0.0)
+
+func test_water_params_is_instance_ready() -> void:
+	var params := WaterParams.new()
+	assert_bool(WaterParams.is_instance_ready(params)).is_true()
+	assert_bool(WaterParams.is_instance_ready(null)).is_false()
+	var placeholder := Resource.new()
+	assert_bool(WaterParams.is_instance_ready(placeholder)).is_false()

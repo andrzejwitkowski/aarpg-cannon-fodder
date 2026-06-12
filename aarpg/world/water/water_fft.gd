@@ -9,6 +9,9 @@ static func log2_int(n: int) -> int:
 	return v
 
 static func fill_butterfly(n: int) -> PackedFloat32Array:
+	if n <= 0 or (n & (n - 1)) != 0:
+		push_error("WaterFft.fill_butterfly() requires a power-of-two size")
+		return PackedFloat32Array()
 	var log_n := log2_int(n)
 	var array := PackedFloat32Array()
 	array.resize(log_n * n * 4)

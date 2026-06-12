@@ -41,8 +41,8 @@ static func _octave(rand: PackedFloat32Array, size: int, u: float, v: float, f: 
 	return a * (1.0 - uu) * (1.0 - vv) + b * uu * (1.0 - vv) + c * (1.0 - uu) * vv + d * uu * vv
 
 static func _sample(rand: PackedFloat32Array, size: int, f: int, x: int, y: int) -> float:
-	var X := ((x % f) + f) % f
-	var Y := ((y % f) + f) % f
+	var X := (((x % f) + f) % f) % size
+	var Y := (((y % f) + f) % f) % size
 	return rand[Y * size + X]
 
 static func _fbm(rand: PackedFloat32Array, size: int, u: float, v: float, octaves: int) -> float:

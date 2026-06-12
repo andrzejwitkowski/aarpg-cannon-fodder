@@ -51,7 +51,10 @@ func _exit_tree() -> void:
 	_disconnect_params()
 
 func _process(delta: float) -> void:
-	if not _initialized or not _params_ready():
+	if not _params_ready():
+		return
+	if not _initialized:
+		_request_init_simulation()
 		return
 	var run := not Engine.is_editor_hint() or editor_preview_enabled
 	if not run:
@@ -61,9 +64,10 @@ func _process(delta: float) -> void:
 		var interval := 1.0 / maxf(editor_max_fps, 1.0)
 		if _editor_tick < interval:
 			return
-		_editor_accum += _editor_tick
+		var step_dt := _editor_tick
+		_editor_accum += step_dt
 		_editor_tick = 0.0
-		_step(_editor_accum, interval)
+		_step(_editor_accum, step_dt)
 	else:
 		_sim_time += delta * params.time_scale
 		_step(_sim_time, delta)
@@ -71,14 +75,20 @@ func _process(delta: float) -> void:
 func sample_height(world_pos: Vector3) -> float:
 	if _height_query == null or not _height_query.ready:
 		return 0.0
-	return global_position.y + _height_query.sample_height(Vector2(world_pos.x, world_pos.z))
+	var local_pos := to_local(world_pos)
+	return global_position.y + _height_query.sample_height(Vector2(local_pos.x, local_pos.z))
 
 func sample_heights(world_positions: PackedVector3Array) -> PackedFloat32Array:
+	if _height_query == null or not _height_query.ready:
+		var empty := PackedFloat32Array()
+		empty.resize(world_positions.size())
+		return empty
 	var xz := PackedVector2Array()
 	xz.resize(world_positions.size())
 	for i in world_positions.size():
-		xz[i] = Vector2(world_positions[i].x, world_positions[i].z)
-	var heights := _height_query.sample_heights(xz) if _height_query != null else PackedFloat32Array()
+		var local_pos := to_local(world_positions[i])
+		xz[i] = Vector2(local_pos.x, local_pos.z)
+	var heights := _height_query.sample_heights(xz)
 	for i in heights.size():
 		heights[i] += global_position.y
 	return heights
@@ -147,7 +157,8 @@ func _step(time: float, dt: float) -> void:
 	_push_shader_uniforms()
 	if _spray != null and (not Engine.is_editor_hint() or editor_show_spray):
 		var cam := _get_camera_pos()
-		var wind := Vector3(cos(params.wind_direction_rad()), 0.0, sin(params.wind_direction_rad())) * params.wind_speed * 0.1
+		var wind_dir := deg_to_rad(params.wind_direction_deg)
+		var wind := Vector3(cos(wind_dir), 0.0, sin(wind_dir)) * params.wind_speed * 0.1
 		_spray.update(dt, cam, wind)
 
 func _push_shader_uniforms() -> void:

@@ -5,7 +5,9 @@ func test_height_query_after_evolve() -> void:
 	if rd == null:
 		push_warning("Skipping height query test: no RenderingDevice")
 		return
-	var plane: WaterPlane = (load("res://world/water/water_plane.tscn") as PackedScene).instantiate()
+	var packed := load("res://world/water/water_plane.tscn") as PackedScene
+	assert_object(packed).is_not_null()
+	var plane: WaterPlane = packed.instantiate()
 	auto_free(plane)
 	add_child(plane)
 	await get_tree().process_frame

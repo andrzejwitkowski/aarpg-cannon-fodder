@@ -2,7 +2,9 @@
 class_name WaterParams extends Resource
 
 static func is_instance_ready(resource: Resource) -> bool:
-	return resource != null and resource.get_script() != null
+	if resource == null or not resource is WaterParams:
+		return false
+	return resource.get_script() != null
 
 signal spectrum_changed
 signal runtime_changed
@@ -21,7 +23,7 @@ signal noise_regenerate_requested
 @export_category("Physics")
 @export var gravity: float = 9.81:
 	set(v):
-		gravity = v
+		gravity = maxf(v, 0.001)
 		spectrum_changed.emit()
 @export var depth: float = 500.0:
 	set(v):
@@ -154,7 +156,6 @@ signal noise_regenerate_requested
 		if v:
 			regenerate_noise = false
 			noise_regenerate_requested.emit()
-			spectrum_changed.emit()
 
 func delta_k() -> float:
 	return TAU / length_scale

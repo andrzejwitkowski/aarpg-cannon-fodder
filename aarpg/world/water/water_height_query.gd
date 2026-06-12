@@ -58,23 +58,26 @@ func sample_heights(positions: PackedVector2Array) -> PackedFloat32Array:
 	var out := PackedFloat32Array()
 	if not ready or positions.is_empty():
 		return out
-	var count := mini(positions.size(), MAX_POINTS)
-	var data := PackedFloat32Array()
-	data.resize(count * 2)
-	for i in count:
-		data[i * 2] = positions[i].x
-		data[i * 2 + 1] = positions[i].y
-	rd.buffer_update(query_in, 0, count * 8, data.to_byte_array())
-	rd.buffer_update(query_ubo, 0, 16, _query_ubo_bytes(count))
-	var cl := rd.compute_list_begin()
-	rd.compute_list_bind_compute_pipeline(cl, pipeline)
-	rd.compute_list_bind_uniform_set(cl, _uset, 0)
-	rd.compute_list_dispatch(cl, maxi(1, (count + 63) / 64), 1, 1)
-	rd.compute_list_end()
-	var raw := rd.buffer_get_data(query_out).to_float32_array()
-	out.resize(count)
-	for i in count:
-		out[i] = raw[i * 4 + 1]
+	out.resize(positions.size())
+	var offset := 0
+	while offset < positions.size():
+		var count := mini(positions.size() - offset, MAX_POINTS)
+		var data := PackedFloat32Array()
+		data.resize(count * 2)
+		for i in count:
+			data[i * 2] = positions[offset + i].x
+			data[i * 2 + 1] = positions[offset + i].y
+		rd.buffer_update(query_in, 0, count * 8, data.to_byte_array())
+		rd.buffer_update(query_ubo, 0, 16, _query_ubo_bytes(count))
+		var cl := rd.compute_list_begin()
+		rd.compute_list_bind_compute_pipeline(cl, pipeline)
+		rd.compute_list_bind_uniform_set(cl, _uset, 0)
+		rd.compute_list_dispatch(cl, maxi(1, (count + 63) / 64), 1, 1)
+		rd.compute_list_end()
+		var raw := rd.buffer_get_data(query_out).to_float32_array()
+		for i in count:
+			out[offset + i] = raw[i * 4 + 1]
+		offset += count
 	return out
 
 func _query_ubo_bytes(point_count: int) -> PackedByteArray:

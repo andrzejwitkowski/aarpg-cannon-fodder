@@ -71,8 +71,11 @@ func teardown() -> void:
 	ready = false
 
 func update(dt: float, cam_pos: Vector3, wind: Vector3) -> void:
-	if not ready or not params.spray_enabled:
-		if multimesh != null:
+	if not ready or not is_instance_valid(_parent) or not is_instance_valid(multimesh):
+		ready = false
+		return
+	if not params.spray_enabled:
+		if is_instance_valid(multimesh):
 			multimesh.visible = false
 		return
 	multimesh.visible = true
@@ -92,6 +95,8 @@ func update(dt: float, cam_pos: Vector3, wind: Vector3) -> void:
 	_sync_multimesh()
 
 func _sync_multimesh() -> void:
+	if not is_instance_valid(_parent) or not is_instance_valid(multimesh):
+		return
 	var data := rd.buffer_get_data(pos_life).to_float32_array()
 	var mm := multimesh.multimesh
 	for i in count:
