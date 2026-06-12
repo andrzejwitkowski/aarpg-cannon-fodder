@@ -38,6 +38,7 @@ func _ready() -> void:
 	_run_particle_refresh()
 
 func _exit_tree() -> void:
+	_unregister_overlay_intensity()
 	_disconnect_params()
 
 func _process(delta: float) -> void:
@@ -254,6 +255,12 @@ func _register_overlay_intensity() -> void:
 	if overlay == null:
 		return
 	overlay.register_emitter_intensity(get_instance_id(), _overlay_intensity)
+
+func _unregister_overlay_intensity() -> void:
+	var overlay := _resolve_overlay()
+	if overlay == null:
+		return
+	overlay.register_emitter_intensity(get_instance_id(), 0.0)
 
 func _set_particle_intensity(value: float) -> void:
 	if _particles == null:

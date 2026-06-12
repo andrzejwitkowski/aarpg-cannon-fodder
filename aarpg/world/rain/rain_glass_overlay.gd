@@ -110,6 +110,8 @@ func _on_params_changed() -> void:
 	_push_shader_uniforms()
 
 func _aggregate_intensity() -> void:
+	if _contributions.is_empty():
+		return
 	var max_intensity := 0.0
 	for value: float in _contributions.values():
 		max_intensity = maxf(max_intensity, value)
