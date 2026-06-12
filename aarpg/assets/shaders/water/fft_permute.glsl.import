@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dfdflvwe2g21w"
+path="res://.godot/imported/fft_permute.glsl-c26d40d9eaa01031580ad822f7fc0f0e.res"
+
+[deps]
+
+source_file="res://assets/shaders/water/fft_permute.glsl"
+dest_files=["res://.godot/imported/fft_permute.glsl-c26d40d9eaa01031580ad822f7fc0f0e.res"]
+
+[params]
+

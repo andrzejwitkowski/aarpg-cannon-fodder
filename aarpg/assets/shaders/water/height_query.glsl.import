@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bhrjc4odut0ye"
+path="res://.godot/imported/height_query.glsl-37ba393766d7fd4748f5ef6a47a05d89.res"
+
+[deps]
+
+source_file="res://assets/shaders/water/height_query.glsl"
+dest_files=["res://.godot/imported/height_query.glsl-37ba393766d7fd4748f5ef6a47a05d89.res"]
+
+[params]
+

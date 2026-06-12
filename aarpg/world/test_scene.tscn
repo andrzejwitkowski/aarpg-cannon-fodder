@@ -2,7 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://d2qbqjfokn70x" path="res://player/player.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://camera/camera_rig.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://enemies/types/dummy/dummy_enemy.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://cn0kyi588odjy" path="res://enemies/types/dummy/dummy_enemy.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://begd7fghnqvlg" path="res://world/water/water_plane.tscn" id="4"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_world"]
 vertices = PackedVector3Array(-23.478249, 0.45056367, -14.494433, -23.478249, 0.45056367, 24.505566, 15.521751, 0.45056367, 24.505566, 15.521751, 0.45056367, -14.494433)
@@ -58,7 +59,10 @@ shadow_enabled = true
 [node name="Player" parent="." unique_id=1709576158 instance=ExtResource("1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.058925, 1.797893)
 
-[node name="CameraPivot" parent="." instance=ExtResource("2")]
+[node name="CameraPivot" parent="." unique_id=521553860 instance=ExtResource("2")]
 
-[node name="DummyEnemy" parent="." instance=ExtResource("3")]
+[node name="DummyEnemy" parent="." unique_id=199832836 instance=ExtResource("3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.8, 2)
+
+[node name="WaterPlane" parent="." instance=ExtResource("4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9782486, -1.5, 5.0055666)
