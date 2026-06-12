@@ -275,11 +275,14 @@ func _surface_scatter_data() -> Dictionary:
 func _surface_faces() -> PackedVector3Array:
 	if _surface_mesh.mesh == null:
 		return PackedVector3Array()
-	var faces := _surface_mesh.mesh.get_faces()
+	var mesh := _surface_mesh.mesh
+	if mesh is PlaneMesh:
+		return _plane_mesh_faces(mesh as PlaneMesh)
+	if mesh.get_class() == "PlaneMesh":
+		return _plane_mesh_faces(mesh)
+	var faces := mesh.get_faces()
 	if faces.size() > 0:
 		return faces
-	if _surface_mesh.mesh is PlaneMesh:
-		return _plane_mesh_faces(_surface_mesh.mesh as PlaneMesh)
 	return PackedVector3Array()
 
 func _plane_mesh_faces(plane: PlaneMesh) -> PackedVector3Array:
