@@ -210,11 +210,10 @@ func _axis_aligned_plane_size() -> Vector2:
 func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionary:
 	var transforms: Array[Transform3D] = []
 	var height_scales := PackedFloat32Array()
-	height_scales.resize(max_count)
 	var half := plane_size * 0.5
 	var height_max := _effective_height_max()
 	var height_span := maxf(height_max - params.height_min, 0.001)
-	var per_quadrant := maxi(max_count / 4, 1)
+	var per_quadrant := max_count / 4
 	var remainder := max_count - per_quadrant * 4
 	var index := 0
 	for quadrant in 4:
@@ -238,7 +237,7 @@ func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionar
 				yaw = _halton(index + 1, 7) * TAU
 			var surface_transform := Transform3D(Basis.from_euler(Vector3(0.0, yaw, 0.0)), local_pos)
 			transforms.append(_surface_transform_to_field(surface_transform))
-			height_scales[index] = height_scale
+			height_scales.append(height_scale)
 			index += 1
 	return {"transforms": transforms, "height_scales": height_scales}
 
