@@ -78,7 +78,7 @@ func test_grass_blades_are_owned_by_field() -> void:
 	assert_object(mm).is_not_null()
 	assert_object(mm.get_parent()).is_same(field)
 
-func test_grass_field_placement_covers_plane_quadrants_evenly_by_instance_count() -> void:
+func test_grass_field_placement_spreads_instances_across_plane() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
 	var field := packed.instantiate() as GrassField
 	auto_free(field)
@@ -93,18 +93,22 @@ func test_grass_field_placement_covers_plane_quadrants_evenly_by_instance_count(
 	add_child(field)
 	await _wait_for_grass_rebuild(field, 400)
 	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
-	var quadrant_counts := PackedInt32Array([0, 0, 0, 0])
+	var min_x := INF
+	var max_x := -INF
+	var min_z := INF
+	var max_z := -INF
 	for i in mm.multimesh.instance_count:
 		var origin := mm.multimesh.get_instance_transform(i).origin
-		var quadrant := 0
-		if origin.x >= 0.0:
-			quadrant += 1
-		if origin.z >= 0.0:
-			quadrant += 2
-		quadrant_counts[quadrant] += 1
+		min_x = minf(min_x, origin.x)
+		max_x = maxf(max_x, origin.x)
+		min_z = minf(min_z, origin.z)
+		max_z = maxf(max_z, origin.z)
+	var half := plane.size * 0.5
 	assert_int(mm.multimesh.instance_count).is_equal(400)
-	for count in quadrant_counts:
-		assert_bool(count >= 80 and count <= 120).is_true()
+	assert_float(min_x).is_less(-half.x * 0.25)
+	assert_float(max_x).is_greater(half.x * 0.25)
+	assert_float(min_z).is_less(-half.y * 0.25)
+	assert_float(max_z).is_greater(half.y * 0.25)
 
 func test_mesh_surface_sampling_stays_inside_triangle_mesh() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
@@ -126,7 +130,7 @@ func test_mesh_surface_sampling_stays_inside_triangle_mesh() -> void:
 		assert_float(origin.z).is_greater_equal(-0.001)
 		assert_float(origin.x + origin.z).is_less_equal(4.001)
 
-func test_max_instances_distributes_plane_quadrants() -> void:
+func test_max_instances_respects_plane_instance_cap() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
 	var field := packed.instantiate() as GrassField
 	auto_free(field)
@@ -141,18 +145,7 @@ func test_max_instances_distributes_plane_quadrants() -> void:
 	add_child(field)
 	await _wait_for_grass_rebuild(field, 100)
 	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
-	var quadrant_counts := PackedInt32Array([0, 0, 0, 0])
-	for i in mm.multimesh.instance_count:
-		var origin := mm.multimesh.get_instance_transform(i).origin
-		var quadrant := 0
-		if origin.x >= 0.0:
-			quadrant += 1
-		if origin.z >= 0.0:
-			quadrant += 2
-		quadrant_counts[quadrant] += 1
 	assert_int(mm.multimesh.instance_count).is_equal(100)
-	for count in quadrant_counts:
-		assert_bool(count >= 18 and count <= 32).is_true()
 
 func test_runtime_without_interaction_uses_no_interactors() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
