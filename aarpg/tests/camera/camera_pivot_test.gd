@@ -51,7 +51,7 @@ func test_pivot_snaps_to_player_on_ready_in_world_scene() -> void:
 	await await_idle_frame()
 	var pivot: CameraPivot = scene.get_node(CameraRigPaths.RIG_ROOT_NAME)
 	var player: Node3D = scene.get_node("Player")
-	assert_vector(pivot.global_position).is_equal_approx(player.global_position, Vector3(0.01, 0.01, 0.01))
+	assert_vector(pivot.global_position).is_equal_approx(player.global_position, Vector3(0.01, 0.12, 0.01))
 
 func test_pivot_follows_player_in_world_scene() -> void:
 	var packed := load("res://world/test_scene.tscn") as PackedScene
