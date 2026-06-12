@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://crainoverlay01"]
+
+[ext_resource type="Script" path="res://world/rain/rain_glass_overlay.gd" id="1"]
+[ext_resource type="Script" path="res://world/rain/rain_params.gd" id="2"]
+[ext_resource type="Shader" path="res://assets/shaders/rain/rain_glass.gdshader" id="3"]
+
+[sub_resource type="Resource" id="RainParams_default"]
+script = ExtResource("2")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glass"]
+shader = ExtResource("3")
+shader_parameter/rain_intensity = 0.0
+
+[node name="RainGlassOverlay" type="CanvasLayer"]
+layer = 100
+follow_viewport_enabled = true
+script = ExtResource("1")
+always_active = false
+params = SubResource("RainParams_default")
+
+[node name="BackBufferCopy" type="BackBufferCopy" parent="."]
+copy_mode = 2
+
+[node name="GlassRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_glass")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)

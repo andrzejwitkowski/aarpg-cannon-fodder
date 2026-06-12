@@ -23,7 +23,7 @@ const BLADE_SHADER := preload("res://assets/shaders/grass/grass_blade.gdshader")
 @export var editor_preview_interaction: bool = false
 @export var editor_max_fps: float = 30.0
 @export_category("Runtime")
-@export var runtime_wind_enabled: bool = false
+@export var runtime_wind_enabled: bool = true
 @export var runtime_interaction_enabled: bool = false
 
 var _surface_mesh: MeshInstance3D

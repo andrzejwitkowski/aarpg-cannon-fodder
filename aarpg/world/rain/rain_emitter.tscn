@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://crainemitter01"]
+
+[ext_resource type="Script" path="res://world/rain/rain_emitter.gd" id="1"]
+[ext_resource type="Script" path="res://world/rain/rain_params.gd" id="2"]
+
+[sub_resource type="Resource" id="RainParams_default"]
+script = ExtResource("2")
+volume_size = Vector3(24.0, 14.0, 24.0)
+particle_amount = 3000
+
+[node name="RainEmitter" type="Node3D"]
+script = ExtResource("1")
+params = SubResource("RainParams_default")
+
+[node name="RainParticles" type="GPUParticles3D" parent="."]
+
+[node name="VolumeGizmo" type="MeshInstance3D" parent="."]
