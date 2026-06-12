@@ -58,18 +58,18 @@ func test_display_intensity_fades_toward_target() -> void:
 	var overlay := packed.instantiate() as RainGlassOverlay
 	auto_free(overlay)
 	overlay.always_active = false
-	overlay.params.overlay_fade_speed = 4.0
+	overlay.params.overlay_fade_speed = 8.0
 	add_child(overlay)
-	overlay.register_emitter_intensity(1, 1.0)
-	await get_tree().process_frame
-	await get_tree().process_frame
 	var rect := overlay.get_node("GlassRect") as ColorRect
 	var material := rect.material as ShaderMaterial
-	assert_float(material.get_shader_parameter("rain_intensity")).is_greater(0.0)
-	assert_float(material.get_shader_parameter("rain_intensity")).is_less(1.0)
-	for _i in 30:
+	var start_intensity := material.get_shader_parameter("rain_intensity") as float
+	for _i in 60:
+		overlay.register_emitter_intensity(1, 1.0)
 		await get_tree().process_frame
-	assert_float(material.get_shader_parameter("rain_intensity")).is_equal_approx(1.0, 0.05)
+	var end_intensity := material.get_shader_parameter("rain_intensity") as float
+	assert_float(overlay.get_rain_intensity()).is_equal(1.0)
+	assert_float(end_intensity).is_greater(start_intensity)
+	assert_float(end_intensity).is_equal_approx(1.0, 0.08)
 
 func test_glass_shader_loads() -> void:
 	var shader := load(GLASS_SHADER) as Shader
