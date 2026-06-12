@@ -89,8 +89,6 @@ func update(dt: float, cam_pos: Vector3, wind: Vector3) -> void:
 	rd.compute_list_bind_uniform_set(cl, _uset, 0)
 	rd.compute_list_dispatch(cl, maxi(1, (count + 63) / 64), 1, 1)
 	rd.compute_list_end()
-	rd.submit()
-	rd.sync()
 	_sync_multimesh()
 
 func _sync_multimesh() -> void:

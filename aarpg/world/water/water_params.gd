@@ -1,4 +1,8 @@
+@tool
 class_name WaterParams extends Resource
+
+static func is_instance_ready(resource: Resource) -> bool:
+	return resource != null and resource.get_script() != null
 
 signal spectrum_changed
 signal runtime_changed

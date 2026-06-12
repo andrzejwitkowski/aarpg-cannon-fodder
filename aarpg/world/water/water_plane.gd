@@ -5,7 +5,9 @@ class_name WaterPlane extends Node3D
 	set(v):
 		_disconnect_params()
 		params = v if v != null else WaterParams.new()
-		_connect_params()
+		_init_failed = false
+		if _params_ready():
+			_connect_params()
 		if _initialized:
 			_teardown_simulation()
 		_request_init_simulation()
@@ -33,12 +35,15 @@ var _sim_time: float = 0.0
 var _editor_accum: float = 0.0
 var _editor_tick: float = 0.0
 var _initialized := false
+var _init_failed := false
 var _sim_n := -1
 
 func _ready() -> void:
 	if params == null:
 		params = WaterParams.new()
 	_ensure_mesh()
+	if _params_ready():
+		_connect_params()
 	_request_init_simulation()
 
 func _exit_tree() -> void:
@@ -46,7 +51,7 @@ func _exit_tree() -> void:
 	_disconnect_params()
 
 func _process(delta: float) -> void:
-	if not _initialized:
+	if not _initialized or not _params_ready():
 		return
 	var run := not Engine.is_editor_hint() or editor_preview_enabled
 	if not run:
@@ -83,22 +88,28 @@ func _request_init_simulation() -> void:
 		return
 	if Engine.is_editor_hint() and not editor_preview_enabled:
 		return
+	if _init_failed:
+		return
+	if not _params_ready():
+		return
 	_init_simulation()
 
 func _init_simulation() -> void:
-	if not is_inside_tree():
+	if not is_inside_tree() or not _params_ready():
 		return
 	_ensure_mesh()
 	if _mesh_instance == null:
 		return
 	var rd := RenderingServer.get_rendering_device()
 	if rd == null:
+		_init_failed = true
 		return
 	_teardown_simulation()
 	_compute = WaterCompute.new()
 	if not _compute.setup(params):
 		_compute.teardown()
 		_compute = null
+		_init_failed = true
 		return
 	_compute.update_initial_spectrum(params)
 	_material = _mesh_instance.get_surface_override_material(0) as ShaderMaterial
@@ -130,7 +141,7 @@ func _teardown_simulation() -> void:
 		_compute = null
 
 func _step(time: float, dt: float) -> void:
-	if _compute == null:
+	if _compute == null or not _params_ready():
 		return
 	_compute.evolve(params, time, dt)
 	_push_shader_uniforms()
@@ -140,7 +151,7 @@ func _step(time: float, dt: float) -> void:
 		_spray.update(dt, cam, wind)
 
 func _push_shader_uniforms() -> void:
-	if _material == null or _compute == null:
+	if _material == null or _compute == null or not _params_ready():
 		return
 	_material.set_shader_parameter("displacement_tex", _compute.get_displacement_texture())
 	_material.set_shader_parameter("derivatives_tex", _compute.get_derivatives_texture())
@@ -178,8 +189,11 @@ func _rebuild_mesh() -> void:
 	plane.subdivide_depth = mesh_subdivisions
 	_mesh_instance.mesh = plane
 
+func _params_ready() -> bool:
+	return WaterParams.is_instance_ready(params)
+
 func _connect_params() -> void:
-	if params == null:
+	if not _params_ready():
 		return
 	if not params.spectrum_changed.is_connected(_on_spectrum_changed):
 		params.spectrum_changed.connect(_on_spectrum_changed)
@@ -189,7 +203,7 @@ func _connect_params() -> void:
 		params.noise_regenerate_requested.connect(_on_noise_regenerate)
 
 func _disconnect_params() -> void:
-	if params == null:
+	if not _params_ready():
 		return
 	if params.spectrum_changed.is_connected(_on_spectrum_changed):
 		params.spectrum_changed.disconnect(_on_spectrum_changed)
@@ -199,8 +213,9 @@ func _disconnect_params() -> void:
 		params.noise_regenerate_requested.disconnect(_on_noise_regenerate)
 
 func _on_spectrum_changed() -> void:
-	if not is_inside_tree():
+	if not is_inside_tree() or not _params_ready():
 		return
+	_init_failed = false
 	if _sim_n != params.fft_resolution:
 		_teardown_simulation()
 		_request_init_simulation()
@@ -214,7 +229,7 @@ func _on_runtime_changed() -> void:
 	_push_shader_uniforms()
 
 func _on_noise_regenerate() -> void:
-	if _compute == null:
+	if _compute == null or not _params_ready():
 		return
 	_compute.regenerate_noise(randi())
 	_compute.update_initial_spectrum(params)

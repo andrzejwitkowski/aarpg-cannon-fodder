@@ -101,8 +101,6 @@ func update_initial_spectrum(params: WaterParams) -> void:
 	_reset_turbulence()
 	_dispatch_init()
 	_dispatch_conj()
-	rd.submit()
-	rd.sync()
 
 func evolve(params: WaterParams, time: float, dt: float) -> void:
 	if not ready:
@@ -115,8 +113,6 @@ func evolve(params: WaterParams, time: float, dt: float) -> void:
 	_run_fft_on_field(dyx_dyz, scratch[2], 2)
 	_run_fft_on_field(dxx_dzz, scratch[3], 3)
 	_dispatch_assemble()
-	rd.submit()
-	rd.sync()
 
 func get_displacement_texture() -> RID:
 	return displacement_view

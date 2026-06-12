@@ -71,8 +71,6 @@ func sample_heights(positions: PackedVector2Array) -> PackedFloat32Array:
 	rd.compute_list_bind_uniform_set(cl, _uset, 0)
 	rd.compute_list_dispatch(cl, maxi(1, (count + 63) / 64), 1, 1)
 	rd.compute_list_end()
-	rd.submit()
-	rd.sync()
 	var raw := rd.buffer_get_data(query_out).to_float32_array()
 	out.resize(count)
 	for i in count:
