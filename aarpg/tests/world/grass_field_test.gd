@@ -46,7 +46,7 @@ func test_grass_field_placement_on_plane() -> void:
 	field.params = GrassParams.new()
 	field.params.max_instances = 37
 	add_child(field)
-	await _wait_for_grass_rebuild()
+	await _wait_for_grass_rebuild(field, 37)
 	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
 	assert_object(mm.multimesh).is_not_null()
 	assert_int(mm.multimesh.instance_count).is_equal(37)
@@ -72,7 +72,8 @@ func test_grass_blades_are_owned_by_field() -> void:
 	root.add_child(field)
 	field.surface = field.get_path_to(surface)
 	field.params = GrassParams.new()
-	await _wait_for_grass_rebuild()
+	field.params.max_instances = 64
+	await _wait_for_grass_rebuild(field, 64)
 	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
 	assert_object(mm).is_not_null()
 	assert_object(mm.get_parent()).is_same(field)
@@ -90,11 +91,11 @@ func test_grass_field_placement_covers_plane_quadrants_evenly_by_instance_count(
 	field.params = GrassParams.new()
 	field.params.max_instances = 400
 	add_child(field)
-	await _wait_for_grass_rebuild()
+	await _wait_for_grass_rebuild(field, 400)
 	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
 	var quadrant_counts := PackedInt32Array([0, 0, 0, 0])
 	for i in mm.multimesh.instance_count:
-		var origin := _grass_instance_surface_origin(field, surface, mm, i)
+		var origin := mm.multimesh.get_instance_transform(i).origin
 		var quadrant := 0
 		if origin.x >= 0.0:
 			quadrant += 1
@@ -116,11 +117,11 @@ func test_mesh_surface_sampling_stays_inside_triangle_mesh() -> void:
 	field.params = GrassParams.new()
 	field.params.max_instances = 37
 	add_child(field)
-	await _wait_for_grass_rebuild()
+	await _wait_for_grass_rebuild(field, 37)
 	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
 	assert_int(mm.multimesh.instance_count).is_equal(37)
 	for i in mm.multimesh.instance_count:
-		var origin := _grass_instance_surface_origin(field, surface, mm, i)
+		var origin := mm.multimesh.get_instance_transform(i).origin
 		assert_float(origin.x).is_greater_equal(-0.001)
 		assert_float(origin.z).is_greater_equal(-0.001)
 		assert_float(origin.x + origin.z).is_less_equal(4.001)
@@ -138,11 +139,11 @@ func test_max_instances_distributes_plane_quadrants() -> void:
 	field.params = GrassParams.new()
 	field.params.max_instances = 100
 	add_child(field)
-	await _wait_for_grass_rebuild()
+	await _wait_for_grass_rebuild(field, 100)
 	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
 	var quadrant_counts := PackedInt32Array([0, 0, 0, 0])
 	for i in mm.multimesh.instance_count:
-		var origin := _grass_instance_surface_origin(field, surface, mm, i)
+		var origin := mm.multimesh.get_instance_transform(i).origin
 		var quadrant := 0
 		if origin.x >= 0.0:
 			quadrant += 1
@@ -204,13 +205,12 @@ func test_editor_preview_wind_controls_wind_strength() -> void:
 func after() -> void:
 	_cleanup_test_players()
 
-func _wait_for_grass_rebuild() -> void:
-	for _i in 4:
+func _wait_for_grass_rebuild(field: GrassField, expected_count: int) -> void:
+	for _i in 120:
 		await await_idle_frame()
-
-func _grass_instance_surface_origin(field: GrassField, surface: MeshInstance3D, mm: MultiMeshInstance3D, index: int) -> Vector3:
-	var field_local := mm.multimesh.get_instance_transform(index).origin
-	return surface.to_local(field.to_global(field_local))
+		var mm := field.get_node_or_null("GrassBlades") as MultiMeshInstance3D
+		if mm != null and mm.multimesh != null and mm.multimesh.instance_count == expected_count:
+			return
 
 func _cleanup_test_players() -> void:
 	for node in get_tree().get_nodes_in_group(PlayerUtils.GROUP):

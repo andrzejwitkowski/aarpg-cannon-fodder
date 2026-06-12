@@ -42,7 +42,8 @@ func _ready() -> void:
 	if _params_ready():
 		_connect_params()
 	_resolve_surface()
-	_request_rebuild()
+	_rebuild_pending = true
+	_run_rebuild()
 
 func _exit_tree() -> void:
 	_disconnect_params()

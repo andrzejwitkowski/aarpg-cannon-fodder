@@ -25,6 +25,9 @@ func _ready() -> void:
 	_apply_spring_arm_settings()
 	_camera.make_current()
 	EventBus.character_moved.connect(_on_character_moved)
+	call_deferred("_snap_to_target")
+
+func _snap_to_target() -> void:
 	_resolve_target()
 	if is_instance_valid(_target):
 		global_position = _target.global_position
