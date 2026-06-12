@@ -235,11 +235,18 @@ func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionar
 			var yaw := 0.0
 			if params.random_yaw:
 				yaw = _halton(index + 1, 7) * TAU
-			var surface_transform := Transform3D(Basis.from_euler(Vector3(0.0, yaw, 0.0)), local_pos)
-			transforms.append(_surface_transform_to_field(surface_transform))
+			transforms.append(_blade_instance_transform(local_pos, yaw))
 			height_scales.append(height_scale)
 			index += 1
 	return {"transforms": transforms, "height_scales": height_scales}
+
+func _blade_instance_transform(local_pos: Vector3, yaw: float) -> Transform3D:
+	var basis := Basis.from_euler(Vector3(0.0, yaw, 0.0))
+	if _multimesh_inst != null and _surface_mesh.get_parent() == self and _multimesh_inst.get_parent() == self:
+		var blades_basis := _multimesh_inst.transform.basis.inverse() * _surface_mesh.transform.basis * basis
+		var blades_origin := _multimesh_inst.transform.affine_inverse() * (_surface_mesh.transform * local_pos)
+		return Transform3D(blades_basis, blades_origin)
+	return _surface_transform_to_field(Transform3D(basis, local_pos))
 
 func _surface_scatter_data() -> Dictionary:
 	var triangles: Array = []
