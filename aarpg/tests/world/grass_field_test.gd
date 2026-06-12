@@ -163,24 +163,20 @@ func test_runtime_without_interaction_uses_no_interactors() -> void:
 	var field := packed.instantiate() as GrassField
 	auto_free(field)
 	add_child(field)
-	var player := CharacterBody3D.new()
-	auto_free(player)
-	player.add_to_group(PlayerUtils.GROUP)
-	add_child(player)
+	var player := _spawn_test_player()
 	field.runtime_interaction_enabled = false
 	assert_int(field._interactor_data(false)["count"]).is_equal(0)
+	player.remove_from_group(PlayerUtils.GROUP)
 
 func test_runtime_with_interaction_collects_player() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
 	var field := packed.instantiate() as GrassField
 	auto_free(field)
 	add_child(field)
-	var player := CharacterBody3D.new()
-	auto_free(player)
-	player.add_to_group(PlayerUtils.GROUP)
-	add_child(player)
+	var player := _spawn_test_player()
 	field.runtime_interaction_enabled = true
 	assert_int(field._interactor_data(false)["count"]).is_equal(1)
+	player.remove_from_group(PlayerUtils.GROUP)
 
 func test_runtime_without_wind_uses_zero_wind_strength() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
@@ -209,6 +205,13 @@ func test_editor_preview_wind_controls_wind_strength() -> void:
 	assert_float(field._wind_strength_for_shader(true)).is_equal(0.0)
 	field.editor_preview_wind = true
 	assert_float(field._wind_strength_for_shader(true)).is_equal(0.25)
+
+func _spawn_test_player() -> CharacterBody3D:
+	var player := CharacterBody3D.new()
+	auto_free(player)
+	player.add_to_group(PlayerUtils.GROUP)
+	add_child(player)
+	return player
 
 func _build_triangle_mesh() -> ArrayMesh:
 	var st := SurfaceTool.new()

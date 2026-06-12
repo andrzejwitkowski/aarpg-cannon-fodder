@@ -43,6 +43,8 @@ func _ready() -> void:
 		_connect_params()
 	_resolve_surface()
 	_request_rebuild()
+	if _rebuild_pending:
+		call_deferred("_run_rebuild")
 
 func _exit_tree() -> void:
 	_disconnect_params()
@@ -50,9 +52,6 @@ func _exit_tree() -> void:
 func _process(delta: float) -> void:
 	if not _params_ready():
 		return
-	if _rebuild_pending:
-		_rebuild_pending = false
-		_rebuild_instances()
 	if not _built:
 		return
 	var run := not Engine.is_editor_hint() or editor_preview_enabled
@@ -125,7 +124,17 @@ func _on_params_changed() -> void:
 	_request_rebuild()
 
 func _request_rebuild() -> void:
+	if _rebuild_pending:
+		return
 	_rebuild_pending = true
+	if is_inside_tree():
+		call_deferred("_run_rebuild")
+
+func _run_rebuild() -> void:
+	if not _rebuild_pending:
+		return
+	_rebuild_pending = false
+	_rebuild_instances()
 
 func _rebuild_instances() -> void:
 	_resolve_surface()
@@ -153,9 +162,11 @@ func _rebuild_instances() -> void:
 	_push_shader_uniforms()
 
 func _scatter_blades() -> Dictionary:
+	var max_count := params.max_instances
+	if _surface_mesh.mesh is PlaneMesh:
+		return _scatter_plane_stratified(max_count, _surface_mesh.mesh as PlaneMesh)
 	var transforms: Array[Transform3D] = []
 	var height_scales := PackedFloat32Array()
-	var max_count := params.max_instances
 	var scatter_data := _surface_scatter_data()
 	var triangles: Array = scatter_data["triangles"]
 	if triangles.is_empty():
@@ -186,6 +197,41 @@ func _scatter_blades() -> Dictionary:
 		var surface_transform := Transform3D(_blade_basis(normal, yaw), local_pos)
 		transforms.append(_surface_transform_to_field(surface_transform))
 		height_scales[i] = height_scale
+	return {"transforms": transforms, "height_scales": height_scales}
+
+func _scatter_plane_stratified(max_count: int, plane: PlaneMesh) -> Dictionary:
+	var transforms: Array[Transform3D] = []
+	var height_scales := PackedFloat32Array()
+	height_scales.resize(max_count)
+	var half := plane.size * 0.5
+	var height_max := _effective_height_max()
+	var height_span := maxf(height_max - params.height_min, 0.001)
+	var per_quadrant := maxi(max_count / 4, 1)
+	var remainder := max_count - per_quadrant * 4
+	var index := 0
+	for quadrant in 4:
+		var count := per_quadrant + (1 if quadrant < remainder else 0)
+		for i in count:
+			var u := _halton(index + 1, 2)
+			var v := _halton(index + 1, 3)
+			var x_min := 0.0 if (quadrant & 1) != 0 else -half.x
+			var x_max := half.x if (quadrant & 1) != 0 else 0.0
+			var z_min := 0.0 if (quadrant & 2) != 0 else -half.y
+			var z_max := half.y if (quadrant & 2) != 0 else 0.0
+			var local_x := lerpf(x_min, x_max, u)
+			var local_z := lerpf(z_min, z_max, v)
+			var local_pos := Vector3(local_x, 0.01, local_z)
+			var height := height_max
+			if params.random_height:
+				height = params.height_min + _halton(index + 1, 5) * height_span
+			var height_scale := height / maxf(height_max, 0.001)
+			var yaw := 0.0
+			if params.random_yaw:
+				yaw = _halton(index + 1, 7) * TAU
+			var surface_transform := Transform3D(Basis.from_euler(Vector3(0.0, yaw, 0.0)), local_pos)
+			transforms.append(_surface_transform_to_field(surface_transform))
+			height_scales[index] = height_scale
+			index += 1
 	return {"transforms": transforms, "height_scales": height_scales}
 
 func _surface_scatter_data() -> Dictionary:
