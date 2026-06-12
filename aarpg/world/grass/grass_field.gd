@@ -330,9 +330,10 @@ func _halton(index: int, base: int) -> float:
 	return result
 
 func _surface_transform_to_field(surface_transform: Transform3D) -> Transform3D:
-	if _multimesh_inst != null and _surface_mesh.get_parent() == self and _multimesh_inst.get_parent() == self:
-		var world := _surface_mesh.global_transform * surface_transform
-		return _multimesh_inst.global_transform.affine_inverse() * world
+	if _multimesh_inst == null or _surface_mesh == null:
+		return surface_transform
+	if _surface_mesh.get_parent() == self and _multimesh_inst.get_parent() == self:
+		return _multimesh_inst.transform.affine_inverse() * _surface_mesh.transform * surface_transform
 	return global_transform.affine_inverse() * (_surface_mesh.global_transform * surface_transform)
 
 func _compute_instance_aabb(transforms: Array[Transform3D]) -> AABB:
