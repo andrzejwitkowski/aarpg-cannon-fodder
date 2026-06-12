@@ -76,7 +76,8 @@ func test_glass_shader_loads() -> void:
 	assert_object(shader).is_not_null()
 
 func test_glass_shader_compiles() -> void:
-	var source := FileAccess.get_file_as_string(GLASS_SHADER)
-	var shader := Shader.new()
-	shader.code = source
-	assert_object(shader).is_not_null()
+	var loaded := load(GLASS_SHADER) as Shader
+	assert_object(loaded).is_not_null()
+	var material := ShaderMaterial.new()
+	material.shader = loaded
+	assert_object(material.shader).is_same(loaded)

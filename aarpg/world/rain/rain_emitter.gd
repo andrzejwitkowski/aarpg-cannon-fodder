@@ -46,7 +46,10 @@ func _process(delta: float) -> void:
 		return
 	var run := not Engine.is_editor_hint() or editor_preview_enabled
 	if not run:
+		_particle_intensity = 0.0
+		_overlay_intensity = 0.0
 		_set_particle_intensity(0.0)
+		_register_overlay_intensity()
 		return
 	var step_dt := delta
 	if Engine.is_editor_hint():
