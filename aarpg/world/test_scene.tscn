@@ -4,9 +4,11 @@
 [ext_resource type="PackedScene" path="res://camera/camera_rig.tscn" id="2"]
 [ext_resource type="PackedScene" uid="uid://cn0kyi588odjy" path="res://enemies/types/dummy/dummy_enemy.tscn" id="3"]
 [ext_resource type="PackedScene" uid="uid://begd7fghnqvlg" path="res://world/water/water_plane.tscn" id="4"]
+[ext_resource type="PackedScene" uid="uid://bcjalc1lujemi" path="res://world/grass/grass_field.tscn" id="5"]
+[ext_resource type="Script" uid="uid://bj7n3qt2ai20" path="res://world/grass/grass_params.gd" id="7_fbogg"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_world"]
-vertices = PackedVector3Array(-23.478249, 0.45056367, -14.494433, -23.478249, 0.45056367, 24.505566, 15.521751, 0.45056367, 24.505566, 15.521751, 0.45056367, -14.494433)
+vertices = PackedVector3Array(-23.478249, 4.01422, -14.494433, -23.478249, 4.01422, 24.505566, 15.521751, 4.01422, 24.505566, 15.521751, 4.01422, -14.494433)
 polygons = [PackedInt32Array(3, 2, 0), PackedInt32Array(0, 2, 1)]
 geometry_source_geometry_mode = 2
 geometry_source_group_name = &"navigation_mesh"
@@ -33,17 +35,23 @@ sky = SubResource("Sky_3dogw")
 tonemap_mode = 2
 glow_enabled = true
 
+[sub_resource type="Resource" id="Resource_xhtyf"]
+script = ExtResource("7_fbogg")
+height_min = 1.64
+height_max = 3.0
+metadata/_custom_type_script = "uid://bj7n3qt2ai20"
+
 [node name="World" type="Node3D" unique_id=1519934391]
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1502914626]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.187388, 0)
 navigation_mesh = SubResource("NavigationMesh_world")
 
 [node name="Ground" type="MeshInstance3D" parent="NavigationRegion3D" unique_id=1372854551 groups=["ground_pick", "navigation_mesh"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9782486, -0.04943634, 5.0055666)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9782486, 3.51422, 5.0055666)
 mesh = SubResource("PlaneMesh_ground")
 
 [node name="GroundStaticBody" type="StaticBody3D" parent="NavigationRegion3D/Ground" unique_id=1026467709 groups=["ground_pick", "navigation_mesh"]]
-collision_layer = 1
 collision_mask = 0
 
 [node name="GroundCollisionShape" type="CollisionShape3D" parent="NavigationRegion3D/Ground/GroundStaticBody" unique_id=1543356468]
@@ -64,5 +72,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.058925, 1.797893)
 [node name="DummyEnemy" parent="." unique_id=199832836 instance=ExtResource("3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.8, 2)
 
-[node name="WaterPlane" parent="." instance=ExtResource("4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9782486, -1.5, 5.0055666)
+[node name="WaterPlane" parent="." unique_id=66579872 instance=ExtResource("4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9782486, -0.36068916, 5.0055666)
+
+[node name="GrassField" parent="." unique_id=1905717229 instance=ExtResource("5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.180324, -0.62537766)
+params = SubResource("Resource_xhtyf")
+surface = NodePath("../NavigationRegion3D/Ground")

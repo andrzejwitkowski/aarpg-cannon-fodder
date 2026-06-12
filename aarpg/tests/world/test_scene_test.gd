@@ -66,6 +66,19 @@ func test_water_plane_exists() -> void:
 	auto_free(scene)
 	assert_bool(scene.has_node("WaterPlane")).is_true()
 
+func test_grass_field_exists() -> void:
+	var packed := load(TEST_SCENE) as PackedScene
+	var scene := packed.instantiate()
+	auto_free(scene)
+	assert_bool(scene.has_node("GrassField")).is_true()
+
+func test_grass_fans_are_not_in_test_scene() -> void:
+	var packed := load(TEST_SCENE) as PackedScene
+	var scene := packed.instantiate()
+	auto_free(scene)
+	assert_bool(scene.has_node("GrassFanA")).is_false()
+	assert_bool(scene.has_node("GrassFanB")).is_false()
+
 func test_navigation_mesh_baked_in_scene() -> void:
 	var packed := load(TEST_SCENE) as PackedScene
 	var scene := packed.instantiate()
