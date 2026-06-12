@@ -1,3 +1,4 @@
+@tool
 class_name WaterCompute extends RefCounted
 
 const SHADER_DIR := "res://assets/shaders/water/"

@@ -52,6 +52,8 @@ func _exit_tree() -> void:
 
 func _process(delta: float) -> void:
 	if not _params_ready():
+		if _initialized:
+			_teardown_simulation()
 		return
 	if not _initialized:
 		_request_init_simulation()

@@ -28,5 +28,4 @@ func test_water_params_is_instance_ready() -> void:
 	var params := WaterParams.new()
 	assert_bool(WaterParams.is_instance_ready(params)).is_true()
 	assert_bool(WaterParams.is_instance_ready(null)).is_false()
-	var placeholder := Resource.new()
-	assert_bool(WaterParams.is_instance_ready(placeholder)).is_false()
+	assert_bool(WaterParams.is_instance_ready(Resource.new())).is_false()
