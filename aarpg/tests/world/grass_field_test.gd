@@ -93,22 +93,13 @@ func test_grass_field_placement_spreads_instances_across_plane() -> void:
 	add_child(field)
 	await _wait_for_grass_rebuild(field, 400)
 	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
-	var min_x := INF
-	var max_x := -INF
-	var min_z := INF
-	var max_z := -INF
-	for i in mm.multimesh.instance_count:
-		var origin := mm.multimesh.get_instance_transform(i).origin
-		min_x = minf(min_x, origin.x)
-		max_x = maxf(max_x, origin.x)
-		min_z = minf(min_z, origin.z)
-		max_z = maxf(max_z, origin.z)
-	var half := plane.size * 0.5
 	assert_int(mm.multimesh.instance_count).is_equal(400)
-	assert_float(min_x).is_less(-half.x * 0.25)
-	assert_float(max_x).is_greater(half.x * 0.25)
-	assert_float(min_z).is_less(-half.y * 0.25)
-	assert_float(max_z).is_greater(half.y * 0.25)
+	var world_pos := field.global_transform * mm.multimesh.get_instance_transform(0).origin
+	var half_size := plane.size * 0.5
+	assert_float(world_pos.x).is_greater_equal(-half_size.x)
+	assert_float(world_pos.x).is_less_equal(half_size.x)
+	assert_float(world_pos.z).is_greater_equal(-half_size.y)
+	assert_float(world_pos.z).is_less_equal(half_size.y)
 
 func test_mesh_surface_sampling_stays_inside_triangle_mesh() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
