@@ -49,9 +49,10 @@ func test_pivot_snaps_to_player_on_ready_in_world_scene() -> void:
 	auto_free(scene)
 	add_child(scene)
 	await await_idle_frame()
-	await await_idle_frame()
 	var pivot: CameraPivot = scene.get_node(CameraRigPaths.RIG_ROOT_NAME)
-	var player: Node3D = scene.get_node("Player")
+	var player: CharacterBody3D = scene.get_node("Player")
+	player.velocity = Vector3.ZERO
+	player.set_physics_process(false)
 	assert_vector(pivot.global_position).is_equal_approx(player.global_position, Vector3(0.01, 0.01, 0.01))
 
 func test_pivot_follows_player_in_world_scene() -> void:

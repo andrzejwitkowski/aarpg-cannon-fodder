@@ -203,6 +203,8 @@ func _axis_aligned_plane_size() -> Vector2:
 	var mesh := _surface_mesh.mesh
 	if mesh is PlaneMesh:
 		return (mesh as PlaneMesh).size
+	if mesh.get_class() == "PlaneMesh":
+		return mesh.size
 	return Vector2.ZERO
 
 func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionary:
@@ -329,6 +331,9 @@ func _halton(index: int, base: int) -> float:
 	return result
 
 func _surface_transform_to_field(surface_transform: Transform3D) -> Transform3D:
+	if _multimesh_inst != null and _surface_mesh.get_parent() == self and _multimesh_inst.get_parent() == self:
+		var world := _surface_mesh.global_transform * surface_transform
+		return _multimesh_inst.global_transform.affine_inverse() * world
 	return global_transform.affine_inverse() * (_surface_mesh.global_transform * surface_transform)
 
 func _compute_instance_aabb(transforms: Array[Transform3D]) -> AABB:
