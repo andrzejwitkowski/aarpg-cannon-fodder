@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://begd7fghnqvlg"]
+
+[ext_resource type="Script" path="res://world/water/water_plane.gd" id="1"]
+[ext_resource type="Script" path="res://world/water/water_params.gd" id="2"]
+
+[sub_resource type="Resource" id="WaterParams_default"]
+script = ExtResource("2")
+
+[node name="WaterPlane" type="Node3D"]
+script = ExtResource("1")
+params = SubResource("WaterParams_default")
+plane_size = 400.0
+mesh_subdivisions = 256
+editor_preview_enabled = true
+editor_max_fps = 30.0
+editor_show_spray = true

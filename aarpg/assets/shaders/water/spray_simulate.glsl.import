@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://chakvlgya5ggu"
+path="res://.godot/imported/spray_simulate.glsl-21ee5ccc4f66aacc411949aa946dcf9d.res"
+
+[deps]
+
+source_file="res://assets/shaders/water/spray_simulate.glsl"
+dest_files=["res://.godot/imported/spray_simulate.glsl-21ee5ccc4f66aacc411949aa946dcf9d.res"]
+
+[params]
+

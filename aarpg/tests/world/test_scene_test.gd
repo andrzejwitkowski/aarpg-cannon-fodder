@@ -60,6 +60,12 @@ func test_navigation_region_uses_editor_bake_groups() -> void:
 	assert_int(nav_mesh.geometry_source_geometry_mode).is_equal(2)
 	assert_str(nav_mesh.geometry_source_group_name).is_equal("navigation_mesh")
 
+func test_water_plane_exists() -> void:
+	var packed := load(TEST_SCENE) as PackedScene
+	var scene := packed.instantiate()
+	auto_free(scene)
+	assert_bool(scene.has_node("WaterPlane")).is_true()
+
 func test_navigation_mesh_baked_in_scene() -> void:
 	var packed := load(TEST_SCENE) as PackedScene
 	var scene := packed.instantiate()

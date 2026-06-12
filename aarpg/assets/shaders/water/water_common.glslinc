@@ -1,0 +1,93 @@
+vec2 cmul(vec2 a, vec2 b) {
+	return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+int wrap_i(int x, int n) {
+	int m = x % n;
+	return m < 0 ? m + n : m;
+}
+
+ivec2 wrap_texel(ivec2 cell, int n) {
+	return ivec2(wrap_i(cell.x, n), wrap_i(cell.y, n));
+}
+
+struct SpectrumSet {
+	float scale;
+	float angle;
+	float spread_blend;
+	float swell;
+	float alpha;
+	float peak_omega;
+	float gamma;
+	float short_waves_fade;
+};
+
+struct SpectrumParams {
+	float g;
+	float depth;
+	float delta_k;
+	float cutoff_low;
+	float cutoff_high;
+	SpectrumSet local;
+	SpectrumSet swell;
+};
+
+float wave_frequency(float k, float g, float depth) {
+	return sqrt(g * k * tanh(min(k * depth, 20.0)));
+}
+
+float wave_frequency_derivative(float k, float g, float depth) {
+	float th = tanh(min(k * depth, 20.0));
+	float ch = cosh(k * depth);
+	float f = wave_frequency(k, g, depth);
+	return (k * depth / (ch * ch) + th) * g / f / 2.0;
+}
+
+float normalisation_factor(float s) {
+	float s2 = s * s;
+	float s3 = s2 * s;
+	float s4 = s3 * s;
+	float a = s4 * -0.000564 + s3 * 0.00776 + s2 * -0.044 + s * 0.192 + 0.163;
+	float b = s4 * -4.8e-8 + s3 * 1.07e-5 + s2 * -9.53e-4 + s * 5.9e-2 + 3.93e-1;
+	return mix(a, b, step(5.0, s));
+}
+
+float cosine2s(float theta, float s) {
+	return normalisation_factor(s) * pow(abs(cos(theta * 0.5)), s * 2.0);
+}
+
+float spread_power(float omega, float peak_omega) {
+	float r = omega / peak_omega;
+	float hi = pow(abs(r), -2.5) * 9.77;
+	float lo = pow(abs(r), 5.0) * 6.97;
+	return mix(lo, hi, step(peak_omega, omega));
+}
+
+float direction_spectrum(float theta, float omega, SpectrumSet p) {
+	float s = spread_power(omega, p.peak_omega) + tanh(min(omega / p.peak_omega, 20.0)) * 16.0 * p.swell * p.swell;
+	float base = cos(theta) * cos(theta) * (2.0 / 3.14159265);
+	return mix(base, cosine2s(theta - p.angle, s), p.spread_blend);
+}
+
+float tma_correction(float omega, float g, float depth) {
+	float omega_h = omega * sqrt(depth / g);
+	float c1 = omega_h * omega_h * 0.5;
+	float tw = 2.0 - omega_h;
+	float c2 = 1.0 - tw * tw * 0.5;
+	return mix(c1, mix(c2, 1.0, step(2.0, omega_h)), step(1.0, omega_h));
+}
+
+float jonswap(float omega, float g, float depth, SpectrumSet p) {
+	float sigma = mix(0.07, 0.09, step(p.peak_omega, omega));
+	float dw = omega - p.peak_omega;
+	float r = exp(-dw * dw / (sigma * sigma * p.peak_omega * p.peak_omega * 2.0));
+	float oo = 1.0 / omega;
+	float oo5 = oo * oo * oo * oo * oo;
+	float po = p.peak_omega / omega;
+	float po4 = po * po * po * po;
+	return p.scale * tma_correction(omega, g, depth) * p.alpha * g * g * oo5 * exp(po4 * -1.25) * pow(p.gamma, r);
+}
+
+float short_waves_fade(float k_len, SpectrumSet p) {
+	return exp(-p.short_waves_fade * p.short_waves_fade * k_len * k_len);
+}
