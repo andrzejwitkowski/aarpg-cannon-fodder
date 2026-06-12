@@ -43,8 +43,6 @@ func _ready() -> void:
 		_connect_params()
 	_resolve_surface()
 	_request_rebuild()
-	if _rebuild_pending:
-		call_deferred("_run_rebuild")
 
 func _exit_tree() -> void:
 	_disconnect_params()
@@ -124,8 +122,6 @@ func _on_params_changed() -> void:
 	_request_rebuild()
 
 func _request_rebuild() -> void:
-	if _rebuild_pending:
-		return
 	_rebuild_pending = true
 	if is_inside_tree():
 		call_deferred("_run_rebuild")
@@ -163,8 +159,9 @@ func _rebuild_instances() -> void:
 
 func _scatter_blades() -> Dictionary:
 	var max_count := params.max_instances
-	if _surface_mesh.mesh is PlaneMesh:
-		return _scatter_plane_stratified(max_count, _surface_mesh.mesh as PlaneMesh)
+	var plane_size := _axis_aligned_plane_size()
+	if plane_size != Vector2.ZERO:
+		return _scatter_plane_stratified(max_count, plane_size)
 	var transforms: Array[Transform3D] = []
 	var height_scales := PackedFloat32Array()
 	var scatter_data := _surface_scatter_data()
@@ -199,11 +196,19 @@ func _scatter_blades() -> Dictionary:
 		height_scales[i] = height_scale
 	return {"transforms": transforms, "height_scales": height_scales}
 
-func _scatter_plane_stratified(max_count: int, plane: PlaneMesh) -> Dictionary:
+func _axis_aligned_plane_size() -> Vector2:
+	if _surface_mesh == null or _surface_mesh.mesh == null:
+		return Vector2.ZERO
+	var mesh := _surface_mesh.mesh
+	if mesh is PlaneMesh:
+		return (mesh as PlaneMesh).size
+	return Vector2.ZERO
+
+func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionary:
 	var transforms: Array[Transform3D] = []
 	var height_scales := PackedFloat32Array()
 	height_scales.resize(max_count)
-	var half := plane.size * 0.5
+	var half := plane_size * 0.5
 	var height_max := _effective_height_max()
 	var height_span := maxf(height_max - params.height_min, 0.001)
 	var per_quadrant := maxi(max_count / 4, 1)
