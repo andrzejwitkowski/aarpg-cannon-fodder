@@ -83,7 +83,6 @@ func _ensure_multimesh() -> void:
 		_multimesh_inst = MultiMeshInstance3D.new()
 		_multimesh_inst.name = "GrassBlades"
 	_multimesh_inst.material_override = _material
-	_multimesh_inst.extra_cull_margin = 4096.0
 	if _multimesh_inst.get_parent() == self:
 		return
 	if _multimesh_inst.get_parent() != null:
@@ -133,9 +132,15 @@ func _run_rebuild() -> void:
 	_rebuild_pending = false
 	_rebuild_instances()
 
+func _clear_multimesh() -> void:
+	if _multimesh_inst == null:
+		return
+	_multimesh_inst.multimesh = null
+
 func _rebuild_instances() -> void:
 	_resolve_surface()
 	if _surface_mesh == null or not _params_ready():
+		_clear_multimesh()
 		_built = false
 		return
 	_ensure_multimesh()
@@ -143,6 +148,7 @@ func _rebuild_instances() -> void:
 	var transforms: Array[Transform3D] = scatter_result["transforms"]
 	var height_scales: PackedFloat32Array = scatter_result["height_scales"]
 	if transforms.is_empty():
+		_clear_multimesh()
 		_built = false
 		return
 	var mm := MultiMesh.new()

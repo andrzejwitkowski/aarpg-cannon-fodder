@@ -22,7 +22,7 @@ static func collect(
 			count += 1
 	elif tree != null:
 		var player := PlayerUtils.instance()
-		if player != null and count < MAX_INTERACTORS:
+		if is_instance_valid(player) and count < MAX_INTERACTORS:
 			positions[count] = player.global_position
 			radii[count] = params.interactor_radius
 			count += 1
