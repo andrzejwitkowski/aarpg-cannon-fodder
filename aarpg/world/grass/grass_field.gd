@@ -192,8 +192,7 @@ func _scatter_blades() -> Dictionary:
 		var yaw := 0.0
 		if params.random_yaw:
 			yaw = _halton(i + 1, 7) * TAU
-		var surface_transform := Transform3D(_blade_basis(normal, yaw), local_pos)
-		transforms.append(_surface_transform_to_field(surface_transform))
+		transforms.append(_blade_instance_transform(local_pos, yaw, true, normal))
 		height_scales[i] = height_scale
 	return {"transforms": transforms, "height_scales": height_scales}
 
@@ -205,7 +204,12 @@ func _axis_aligned_plane_size() -> Vector2:
 		return (mesh as PlaneMesh).size
 	if mesh.get_class() == "PlaneMesh":
 		return mesh.size
-	return Vector2.ZERO
+	var size_value = mesh.get("size")
+	if size_value is Vector2:
+		var plane_size: Vector2 = size_value
+		if plane_size != Vector2.ZERO:
+			return plane_size
+	return _plane_size_from_faces(_surface_faces())
 
 func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionary:
 	var transforms: Array[Transform3D] = []
@@ -235,18 +239,18 @@ func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionar
 			var yaw := 0.0
 			if params.random_yaw:
 				yaw = _halton(index + 1, 7) * TAU
-			transforms.append(_blade_instance_transform(local_pos, yaw))
+			transforms.append(_blade_instance_transform(local_pos, yaw, false))
 			height_scales.append(height_scale)
 			index += 1
 	return {"transforms": transforms, "height_scales": height_scales}
 
-func _blade_instance_transform(local_pos: Vector3, yaw: float) -> Transform3D:
-	var basis := Basis.from_euler(Vector3(0.0, yaw, 0.0))
+func _blade_instance_transform(local_pos: Vector3, yaw: float, align_to_normal: bool, normal: Vector3 = Vector3.UP) -> Transform3D:
+	var basis := _blade_basis(normal, yaw) if align_to_normal else Basis.from_euler(Vector3(0.0, yaw, 0.0))
+	var surface_transform := Transform3D(basis, local_pos)
 	if _multimesh_inst != null and _surface_mesh.get_parent() == self and _multimesh_inst.get_parent() == self:
-		var blades_basis := _multimesh_inst.transform.basis.inverse() * _surface_mesh.transform.basis * basis
-		var blades_origin := _multimesh_inst.transform.affine_inverse() * (_surface_mesh.transform * local_pos)
-		return Transform3D(blades_basis, blades_origin)
-	return _surface_transform_to_field(Transform3D(basis, local_pos))
+		var world := _surface_mesh.global_transform * surface_transform
+		return _multimesh_inst.global_transform.affine_inverse() * world
+	return _surface_transform_to_field(surface_transform)
 
 func _surface_scatter_data() -> Dictionary:
 	var triangles: Array = []
@@ -286,14 +290,37 @@ func _surface_faces() -> PackedVector3Array:
 	if mesh is PlaneMesh:
 		return _plane_mesh_faces(mesh as PlaneMesh)
 	if mesh.get_class() == "PlaneMesh":
-		return _plane_mesh_faces(mesh)
+		return _plane_mesh_faces_from_size(mesh.size)
+	var size_value = mesh.get("size")
+	if size_value is Vector2:
+		var plane_size: Vector2 = size_value
+		if plane_size != Vector2.ZERO:
+			return _plane_mesh_faces_from_size(plane_size)
 	var faces := mesh.get_faces()
 	if faces.size() > 0:
 		return faces
 	return PackedVector3Array()
 
-func _plane_mesh_faces(plane: PlaneMesh) -> PackedVector3Array:
-	var half := plane.size * 0.5
+func _plane_size_from_faces(faces: PackedVector3Array) -> Vector2:
+	if faces.is_empty():
+		return Vector2.ZERO
+	var min_x := faces[0].x
+	var max_x := faces[0].x
+	var min_z := faces[0].z
+	var max_z := faces[0].z
+	for vertex: Vector3 in faces:
+		min_x = minf(min_x, vertex.x)
+		max_x = maxf(max_x, vertex.x)
+		min_z = minf(min_z, vertex.z)
+		max_z = maxf(max_z, vertex.z)
+	var width := max_x - min_x
+	var depth := max_z - min_z
+	if width <= 0.0 or depth <= 0.0:
+		return Vector2.ZERO
+	return Vector2(width, depth)
+
+func _plane_mesh_faces_from_size(plane_size: Vector2) -> PackedVector3Array:
+	var half := plane_size * 0.5
 	return PackedVector3Array([
 		Vector3(-half.x, 0.0, -half.y),
 		Vector3(half.x, 0.0, -half.y),
@@ -302,6 +329,9 @@ func _plane_mesh_faces(plane: PlaneMesh) -> PackedVector3Array:
 		Vector3(half.x, 0.0, half.y),
 		Vector3(-half.x, 0.0, half.y),
 	])
+
+func _plane_mesh_faces(plane: PlaneMesh) -> PackedVector3Array:
+	return _plane_mesh_faces_from_size(plane.size)
 
 func _pick_scatter_triangle(cumulative_area: PackedFloat32Array, area_pick: float) -> int:
 	var low := 0
