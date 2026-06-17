@@ -29,7 +29,7 @@ func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(_camera):
 		return
 	var blockers := OcclusionRevealQuery.collect_blockers(
-		get_world_3d().direct_space_state,
+		_camera.get_world_3d().direct_space_state,
 		_camera.global_position,
 		player_pos,
 		collision_mask
