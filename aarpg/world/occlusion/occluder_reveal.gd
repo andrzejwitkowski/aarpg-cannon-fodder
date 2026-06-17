@@ -5,6 +5,20 @@ const SHADER := preload("res://assets/shaders/occlusion_reveal.gdshader")
 
 static var _white_tex_cache: Texture2D
 
+@export_category("Surface")
+@export var albedo_tint: Color = Color(0.6, 0.55, 0.5):
+	set(v):
+		albedo_tint = v
+		_sync_shader_params()
+@export_range(0.0, 1.0) var roughness: float = 0.85:
+	set(v):
+		roughness = v
+		_sync_shader_params()
+@export_range(0.0, 1.0) var metallic: float = 0.0:
+	set(v):
+		metallic = v
+		_sync_shader_params()
+
 @export_category("Reveal")
 @export var hole_radius: float = 1.2:
 	set(v):
@@ -14,9 +28,19 @@ static var _white_tex_cache: Texture2D
 	set(v):
 		melt_width = maxf(v, 0.05)
 		_sync_shader_params()
+@export_range(1.0, 4.0) var melt_outer_scale: float = 2.0:
+	set(v):
+		melt_outer_scale = v
+		_sync_shader_params()
+@export_range(0.0, 0.2) var reveal_discard_threshold: float = 0.01:
+	set(v):
+		reveal_discard_threshold = v
+		_sync_shader_params()
 @export var fade_speed: float = 8.0:
 	set(v):
 		fade_speed = maxf(v, 0.1)
+
+@export_category("Fire")
 @export var fire_color_hot: Color = Color(1.0, 0.45, 0.05):
 	set(v):
 		fire_color_hot = v
@@ -24,6 +48,30 @@ static var _white_tex_cache: Texture2D
 @export var fire_color_cool: Color = Color(0.85, 0.15, 0.02):
 	set(v):
 		fire_color_cool = v
+		_sync_shader_params()
+@export_range(0.0, 1.0) var fire_flicker_min: float = 0.65:
+	set(v):
+		fire_flicker_min = v
+		_sync_shader_params()
+@export_range(0.0, 1.0) var fire_flicker_amplitude: float = 0.35:
+	set(v):
+		fire_flicker_amplitude = v
+		_sync_shader_params()
+@export_range(0.0, 30.0) var fire_flicker_speed: float = 9.0:
+	set(v):
+		fire_flicker_speed = v
+		_sync_shader_params()
+@export_range(0.0, 20.0) var fire_flicker_wave_scale: float = 6.0:
+	set(v):
+		fire_flicker_wave_scale = v
+		_sync_shader_params()
+@export_range(0.0, 10.0) var fire_noise_scale: float = 2.5:
+	set(v):
+		fire_noise_scale = v
+		_sync_shader_params()
+@export_range(0.0, 5.0) var fire_noise_speed: float = 0.4:
+	set(v):
+		fire_noise_speed = v
 		_sync_shader_params()
 
 var _mesh: MeshInstance3D
@@ -65,22 +113,33 @@ func _build_material() -> void:
 		source = _mesh.get_surface_override_material(0)
 		if source == null:
 			source = _mesh.mesh.surface_get_material(0)
-	_sync_shader_params()
 	_material.set_shader_parameter("albedo_tex", _white_texture())
 	if source is StandardMaterial3D:
 		var std := source as StandardMaterial3D
 		if std.albedo_texture != null:
 			_material.set_shader_parameter("albedo_tex", std.albedo_texture)
-		_material.set_shader_parameter("albedo_tint", std.albedo_color)
+		albedo_tint = std.albedo_color
+	_sync_shader_params()
 	_mesh.material_override = _material
 
 func _sync_shader_params() -> void:
 	if _material == null:
 		return
+	_material.set_shader_parameter("albedo_tint", albedo_tint)
+	_material.set_shader_parameter("roughness", roughness)
+	_material.set_shader_parameter("metallic", metallic)
 	_material.set_shader_parameter("hole_radius", hole_radius)
 	_material.set_shader_parameter("melt_width", melt_width)
+	_material.set_shader_parameter("melt_outer_scale", melt_outer_scale)
+	_material.set_shader_parameter("reveal_discard_threshold", reveal_discard_threshold)
 	_material.set_shader_parameter("fire_color_hot", fire_color_hot)
 	_material.set_shader_parameter("fire_color_cool", fire_color_cool)
+	_material.set_shader_parameter("fire_flicker_min", fire_flicker_min)
+	_material.set_shader_parameter("fire_flicker_amplitude", fire_flicker_amplitude)
+	_material.set_shader_parameter("fire_flicker_speed", fire_flicker_speed)
+	_material.set_shader_parameter("fire_flicker_wave_scale", fire_flicker_wave_scale)
+	_material.set_shader_parameter("fire_noise_scale", fire_noise_scale)
+	_material.set_shader_parameter("fire_noise_speed", fire_noise_speed)
 
 static func _white_texture() -> Texture2D:
 	if _white_tex_cache == null:
