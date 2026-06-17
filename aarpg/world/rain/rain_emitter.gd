@@ -36,6 +36,7 @@ func _ready() -> void:
 		_connect_params()
 	_request_particle_refresh()
 	_run_particle_refresh()
+	_set_particle_intensity(0.0)
 
 func _exit_tree() -> void:
 	_unregister_overlay_intensity()
