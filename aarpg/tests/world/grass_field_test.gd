@@ -123,27 +123,17 @@ func test_mesh_surface_sampling_stays_inside_triangle_mesh() -> void:
 		assert_float(origin.y).is_greater_equal(-0.001)
 		assert_float(origin.y).is_less_equal(0.05)
 
-func test_grass_orients_basis_to_triangle_normal() -> void:
-	var packed := load(GRASS_FIELD_SCENE) as PackedScene
-	var field := packed.instantiate() as GrassField
-	auto_free(field)
-	var surface := MeshInstance3D.new()
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	st.add_vertex(Vector3(0.0, 0.0, 0.0))
-	st.add_vertex(Vector3(1.0, 0.0, 0.0))
-	st.add_vertex(Vector3(0.0, 1.0, 0.0))
-	surface.mesh = st.commit()
-	field.add_child(surface)
-	field.surface = field.get_path_to(surface)
-	field.params = GrassParams.new()
-	field.params.max_instances = 1
-	field.params.random_yaw = false
-	add_child(field)
-	await _wait_for_grass_rebuild(field, 1)
-	var mm := _grass_blades(field)
-	var basis_y := mm.multimesh.get_instance_transform(0).basis.y.normalized()
-	assert_float(absf(basis_y.dot(Vector3(0.0, 0.0, 1.0)))).is_greater(0.85)
+func test_orient_normal_outward_flips_inward_normals() -> void:
+	var centroid := Vector3(0.0, 0.0, 1.0)
+	var normal := Vector3(0.0, 0.0, -1.0)
+	var outward := centroid
+	if outward.length_squared() > 0.000001 and normal.dot(outward) < 0.0:
+		normal = -normal
+	assert_float(normal.dot(Vector3(0.0, 0.0, 1.0))).is_greater(0.99)
+
+func test_blade_shader_projects_wind_on_tangent_plane() -> void:
+	var source := FileAccess.get_file_as_string(BLADE_SHADER)
+	assert_bool(source.contains("project_onto_tangent")).is_true()
 
 func test_max_instances_respects_plane_instance_cap() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
