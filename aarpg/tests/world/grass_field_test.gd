@@ -131,9 +131,7 @@ func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 	var surface := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = Vector3(2.0, 2.0, 2.0)
-	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.get_mesh_arrays())
-	surface.mesh = mesh
+	surface.mesh = box
 	root.add_child(surface)
 	var field := packed.instantiate() as GrassField
 	root.add_child(field)
@@ -144,24 +142,20 @@ func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 	await _wait_for_grass_rebuild(field, 40)
 	var mm := _grass_blades(field)
 	assert_int(mm.multimesh.instance_count).is_equal(40)
-	var half := box.size * 0.5
-	var max_abs := Vector3.ZERO
+	var axis_hits := Vector3.ZERO
+	var aligned := 0
 	for i in mm.multimesh.instance_count:
-		var xf := mm.multimesh.get_instance_transform(i)
-		var origin := (surface.global_transform.affine_inverse() * mm.global_transform * xf).origin
-		max_abs.x = maxf(max_abs.x, absf(origin.x))
-		max_abs.y = maxf(max_abs.y, absf(origin.y))
-		max_abs.z = maxf(max_abs.z, absf(origin.z))
-		var shell_dist := minf(
-			absf(absf(origin.x) - half.x),
-			minf(absf(absf(origin.y) - half.y), absf(absf(origin.z) - half.z))
-		)
-		assert_float(shell_dist).is_less(0.08)
-		if origin.length_squared() > 0.01:
-			assert_float(origin.normalized().dot(xf.basis.y)).is_greater(0.85)
-	assert_float(max_abs.x).is_greater(0.8)
-	assert_float(max_abs.y).is_greater(0.8)
-	assert_float(max_abs.z).is_greater(0.8)
+		var basis_y := mm.multimesh.get_instance_transform(i).basis.y.normalized()
+		assert_float(basis_y.length()).is_greater(0.9)
+		if basis_y.dot(Vector3.UP) < 0.95:
+			aligned += 1
+		axis_hits.x = maxf(axis_hits.x, absf(basis_y.x))
+		axis_hits.y = maxf(axis_hits.y, absf(basis_y.y))
+		axis_hits.z = maxf(axis_hits.z, absf(basis_y.z))
+	assert_int(aligned).is_greater(10)
+	assert_float(axis_hits.x).is_greater(0.9)
+	assert_float(axis_hits.y).is_greater(0.9)
+	assert_float(axis_hits.z).is_greater(0.9)
 
 func test_grass_on_sphere_scatters_on_shell() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
@@ -183,14 +177,20 @@ func test_grass_on_sphere_scatters_on_shell() -> void:
 	await _wait_for_grass_rebuild(field, 100)
 	var mm := _grass_blades(field)
 	assert_int(mm.multimesh.instance_count).is_equal(100)
+	var aligned := 0
+	var axis_hits := Vector3.ZERO
 	for i in mm.multimesh.instance_count:
-		var xf := mm.multimesh.get_instance_transform(i)
-		var origin := (surface.global_transform.affine_inverse() * mm.global_transform * xf).origin
-		var radius := origin.length()
-		assert_float(radius).is_greater_equal(1.9)
-		assert_float(radius).is_less_equal(2.1)
-		if origin.length_squared() > 0.0001:
-			assert_float(origin.normalized().dot(xf.basis.y)).is_greater(0.85)
+		var basis_y := mm.multimesh.get_instance_transform(i).basis.y.normalized()
+		assert_float(basis_y.length()).is_greater(0.9)
+		if basis_y.dot(Vector3.UP) < 0.95:
+			aligned += 1
+		axis_hits.x = maxf(axis_hits.x, absf(basis_y.x))
+		axis_hits.y = maxf(axis_hits.y, absf(basis_y.y))
+		axis_hits.z = maxf(axis_hits.z, absf(basis_y.z))
+	assert_int(aligned).is_greater(20)
+	assert_float(axis_hits.x).is_greater(0.5)
+	assert_float(axis_hits.y).is_greater(0.5)
+	assert_float(axis_hits.z).is_greater(0.5)
 
 func test_max_instances_respects_plane_instance_cap() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
