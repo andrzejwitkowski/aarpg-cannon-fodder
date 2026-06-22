@@ -304,7 +304,7 @@ func _surface_faces() -> PackedVector3Array:
 		if plane_size != Vector2.ZERO:
 			return _plane_mesh_faces_from_size(plane_size)
 	if mesh is PrimitiveMesh:
-		var baked_faces := (mesh as PrimitiveMesh).create_mesh().get_faces()
+		var baked_faces: PackedVector3Array = (mesh as PrimitiveMesh).create_mesh().get_faces()
 		if baked_faces.size() > 0:
 			return baked_faces
 	var faces := mesh.get_faces()
