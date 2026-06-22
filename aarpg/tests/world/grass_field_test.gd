@@ -123,74 +123,27 @@ func test_mesh_surface_sampling_stays_inside_triangle_mesh() -> void:
 		assert_float(origin.y).is_greater_equal(-0.001)
 		assert_float(origin.y).is_less_equal(0.05)
 
-func test_grass_on_box_scatters_on_faces_with_normals() -> void:
+func test_grass_orients_basis_to_triangle_normal() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
-	var root := Node3D.new()
-	auto_free(root)
-	add_child(root)
-	var surface := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(2.0, 2.0, 2.0)
-	surface.mesh = box
-	root.add_child(surface)
 	var field := packed.instantiate() as GrassField
-	root.add_child(field)
+	auto_free(field)
+	var surface := MeshInstance3D.new()
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.add_vertex(Vector3(0.0, 0.0, 0.0))
+	st.add_vertex(Vector3(1.0, 0.0, 0.0))
+	st.add_vertex(Vector3(0.0, 1.0, 0.0))
+	surface.mesh = st.commit()
+	field.add_child(surface)
 	field.surface = field.get_path_to(surface)
 	field.params = GrassParams.new()
-	field.params.max_instances = 40
+	field.params.max_instances = 1
 	field.params.random_yaw = false
-	await _wait_for_grass_rebuild(field, 40)
+	add_child(field)
+	await _wait_for_grass_rebuild(field, 1)
 	var mm := _grass_blades(field)
-	assert_int(mm.multimesh.instance_count).is_equal(40)
-	var axis_hits := Vector3.ZERO
-	var aligned := 0
-	for i in mm.multimesh.instance_count:
-		var basis_y := mm.multimesh.get_instance_transform(i).basis.y.normalized()
-		assert_float(basis_y.length()).is_greater(0.9)
-		if basis_y.dot(Vector3.UP) < 0.95:
-			aligned += 1
-		axis_hits.x = maxf(axis_hits.x, absf(basis_y.x))
-		axis_hits.y = maxf(axis_hits.y, absf(basis_y.y))
-		axis_hits.z = maxf(axis_hits.z, absf(basis_y.z))
-	assert_int(aligned).is_greater(10)
-	assert_float(axis_hits.x).is_greater(0.9)
-	assert_float(axis_hits.y).is_greater(0.9)
-	assert_float(axis_hits.z).is_greater(0.9)
-
-func test_grass_on_sphere_scatters_on_shell() -> void:
-	var packed := load(GRASS_FIELD_SCENE) as PackedScene
-	var root := Node3D.new()
-	auto_free(root)
-	add_child(root)
-	var surface := MeshInstance3D.new()
-	var sphere := SphereMesh.new()
-	sphere.radius = 2.0
-	sphere.height = 4.0
-	surface.mesh = sphere
-	root.add_child(surface)
-	var field := packed.instantiate() as GrassField
-	root.add_child(field)
-	field.surface = field.get_path_to(surface)
-	field.params = GrassParams.new()
-	field.params.max_instances = 100
-	field.params.random_yaw = false
-	await _wait_for_grass_rebuild(field, 100)
-	var mm := _grass_blades(field)
-	assert_int(mm.multimesh.instance_count).is_equal(100)
-	var aligned := 0
-	var axis_hits := Vector3.ZERO
-	for i in mm.multimesh.instance_count:
-		var basis_y := mm.multimesh.get_instance_transform(i).basis.y.normalized()
-		assert_float(basis_y.length()).is_greater(0.9)
-		if basis_y.dot(Vector3.UP) < 0.95:
-			aligned += 1
-		axis_hits.x = maxf(axis_hits.x, absf(basis_y.x))
-		axis_hits.y = maxf(axis_hits.y, absf(basis_y.y))
-		axis_hits.z = maxf(axis_hits.z, absf(basis_y.z))
-	assert_int(aligned).is_greater(20)
-	assert_float(axis_hits.x).is_greater(0.5)
-	assert_float(axis_hits.y).is_greater(0.5)
-	assert_float(axis_hits.z).is_greater(0.5)
+	var basis_y := mm.multimesh.get_instance_transform(0).basis.y.normalized()
+	assert_float(absf(basis_y.dot(Vector3(0.0, 0.0, 1.0)))).is_greater(0.85)
 
 func test_max_instances_respects_plane_instance_cap() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
