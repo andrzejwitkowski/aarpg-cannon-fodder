@@ -215,7 +215,7 @@ func _axis_aligned_plane_size() -> Vector2:
 		var plane_size: Vector2 = size_value
 		if plane_size != Vector2.ZERO:
 			return plane_size
-	return _plane_size_from_faces(_surface_faces())
+	return Vector2.ZERO
 
 func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionary:
 	var transforms: Array[Transform3D] = []
@@ -272,9 +272,8 @@ func _surface_scatter_data() -> Dictionary:
 		var area := cross.length() * 0.5
 		if area <= 0.000001:
 			continue
-		var normal := cross.normalized()
-		if normal.dot(Vector3.UP) < 0.0:
-			normal = -normal
+		var centroid := (a + b + c) / 3.0
+		var normal := _orient_normal_outward(cross.normalized(), centroid)
 		total_area += area
 		cumulative_area.append(total_area)
 		triangles.append({
@@ -307,24 +306,6 @@ func _surface_faces() -> PackedVector3Array:
 		return faces
 	return PackedVector3Array()
 
-func _plane_size_from_faces(faces: PackedVector3Array) -> Vector2:
-	if faces.is_empty():
-		return Vector2.ZERO
-	var min_x := faces[0].x
-	var max_x := faces[0].x
-	var min_z := faces[0].z
-	var max_z := faces[0].z
-	for vertex: Vector3 in faces:
-		min_x = minf(min_x, vertex.x)
-		max_x = maxf(max_x, vertex.x)
-		min_z = minf(min_z, vertex.z)
-		max_z = maxf(max_z, vertex.z)
-	var width := max_x - min_x
-	var depth := max_z - min_z
-	if width <= 0.0 or depth <= 0.0:
-		return Vector2.ZERO
-	return Vector2(width, depth)
-
 func _plane_mesh_faces_from_size(plane_size: Vector2) -> PackedVector3Array:
 	var half := plane_size * 0.5
 	return PackedVector3Array([
@@ -353,6 +334,17 @@ func _pick_scatter_triangle(cumulative_area: PackedFloat32Array, area_pick: floa
 func _sample_triangle_position(a: Vector3, b: Vector3, c: Vector3, u: float, v: float) -> Vector3:
 	var sqrt_u := sqrt(clampf(u, 0.0, 0.999999))
 	return a * (1.0 - sqrt_u) + b * (sqrt_u * (1.0 - v)) + c * (sqrt_u * v)
+
+func _mesh_local_center() -> Vector3:
+	if _surface_mesh == null or _surface_mesh.mesh == null:
+		return Vector3.ZERO
+	return _surface_mesh.mesh.get_aabb().get_center()
+
+func _orient_normal_outward(normal: Vector3, centroid: Vector3) -> Vector3:
+	var outward := centroid - _mesh_local_center()
+	if outward.length_squared() > 0.000001 and normal.dot(outward) < 0.0:
+		return -normal
+	return normal
 
 func _blade_basis(normal: Vector3, yaw: float) -> Basis:
 	var up := normal.normalized()
@@ -385,16 +377,18 @@ func _surface_transform_to_field(surface_transform: Transform3D) -> Transform3D:
 func _compute_instance_aabb(transforms: Array[Transform3D]) -> AABB:
 	if transforms.is_empty():
 		return AABB()
-	var first := transforms[0]
-	var min_p := first.origin
-	var max_p := first.origin
+	var height_max := _effective_height_max()
+	var pad_xz := params.blade_width * 4.0
+	var min_p := transforms[0].origin
+	var max_p := transforms[0].origin
 	for xf in transforms:
 		min_p = min_p.min(xf.origin)
 		max_p = max_p.max(xf.origin)
-	var pad_y := _effective_height_max() * 2.0
-	var pad_xz := params.blade_width * 4.0
-	var padded_min := min_p - Vector3(pad_xz, 0.0, pad_xz)
-	var padded_max := max_p + Vector3(pad_xz, pad_y, pad_xz)
+		var tip := xf.origin + xf.basis.y * height_max
+		min_p = min_p.min(tip)
+		max_p = max_p.max(tip)
+	var padded_min := min_p - Vector3(pad_xz, pad_xz, pad_xz)
+	var padded_max := max_p + Vector3(pad_xz, pad_xz, pad_xz)
 	return AABB(padded_min, padded_max - padded_min)
 
 func _effective_height_max() -> float:

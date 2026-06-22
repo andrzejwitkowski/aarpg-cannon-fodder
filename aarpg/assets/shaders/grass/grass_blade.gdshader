@@ -23,15 +23,20 @@ vec3 world_offset_to_local(vec3 world_offset, mat4 model_mat) {
 	return (inverse(model_mat) * vec4(world_offset, 0.0)).xyz;
 }
 
+vec3 project_onto_tangent(vec3 world_vec, vec3 surface_normal) {
+	return world_vec - surface_normal * dot(world_vec, surface_normal);
+}
+
 void vertex() {
 	float height_scale = max(INSTANCE_CUSTOM.r, 0.05);
 	VERTEX.y *= height_scale;
 	vec3 world_v = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	v_height_frac = clamp(VERTEX.y / max(blade_height * height_scale, 0.001), 0.0, 1.0);
 
-	vec2 wind_dir = vec2(cos(wind_direction_rad), sin(wind_direction_rad));
+	vec3 surface_normal = normalize(mat3(MODEL_MATRIX)[1]);
+	vec3 wind_world = vec3(cos(wind_direction_rad), 0.0, sin(wind_direction_rad));
 	float wind_phase = sin(time_elapsed * wind_speed + world_v.x * 0.35 + world_v.z * 0.35);
-	vec3 wind_offset = vec3(wind_dir.x, 0.0, wind_dir.y) * wind_strength * wind_phase * v_height_frac;
+	vec3 wind_offset = project_onto_tangent(wind_world, surface_normal) * wind_strength * wind_phase * v_height_frac;
 
 	vec3 push = vec3(0.0);
 	for (int i = 0; i < MAX_INTERACTORS; i++) {
@@ -45,9 +50,9 @@ void vertex() {
 			float t = 1.0 - dist / radius;
 			t *= t;
 			vec2 away = dist > 0.001 ? normalize(delta) : vec2(0.0);
-			push.x += away.x * t * interactor_strength * v_height_frac;
-			push.z += away.y * t * interactor_strength * v_height_frac;
-			push.y -= t * interactor_strength * 0.35 * v_height_frac;
+			vec3 away_world = vec3(away.x, 0.0, away.y);
+			push += project_onto_tangent(away_world, surface_normal) * t * interactor_strength * v_height_frac;
+			push -= surface_normal * t * interactor_strength * 0.35 * v_height_frac;
 		}
 	}
 

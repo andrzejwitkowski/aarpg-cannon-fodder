@@ -120,6 +120,74 @@ func test_mesh_surface_sampling_stays_inside_triangle_mesh() -> void:
 		assert_float(origin.x).is_greater_equal(-0.001)
 		assert_float(origin.z).is_greater_equal(-0.001)
 		assert_float(origin.x + origin.z).is_less_equal(4.001)
+		assert_float(origin.y).is_greater_equal(-0.001)
+		assert_float(origin.y).is_less_equal(0.05)
+
+func test_grass_on_box_scatters_on_faces_with_normals() -> void:
+	var packed := load(GRASS_FIELD_SCENE) as PackedScene
+	var field := packed.instantiate() as GrassField
+	auto_free(field)
+	var surface := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(2.0, 2.0, 2.0)
+	surface.mesh = box
+	field.add_child(surface)
+	field.surface = field.get_path_to(surface)
+	field.params = GrassParams.new()
+	field.params.max_instances = 200
+	field.params.random_yaw = false
+	add_child(field)
+	await _wait_for_grass_rebuild(field, 200)
+	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
+	assert_int(mm.multimesh.instance_count).is_equal(200)
+	var half := box.size * 0.5
+	var face_eps := 0.05
+	for i in mm.multimesh.instance_count:
+		var xf := mm.multimesh.get_instance_transform(i)
+		var origin := xf.origin
+		var on_face := (
+			absf(absf(origin.x) - half.x) < face_eps
+			or absf(absf(origin.y) - half.y) < face_eps
+			or absf(absf(origin.z) - half.z) < face_eps
+		)
+		assert_bool(on_face).is_true()
+		var face_normal := Vector3.ZERO
+		if absf(absf(origin.x) - half.x) < face_eps:
+			face_normal.x = signf(origin.x)
+		elif absf(absf(origin.y) - half.y) < face_eps:
+			face_normal.y = signf(origin.y)
+		else:
+			face_normal.z = signf(origin.z)
+		assert_float(xf.basis.y.dot(face_normal)).is_greater(0.85)
+		if origin.length_squared() > 0.01:
+			assert_float(origin.dot(xf.basis.y)).is_greater(0.0)
+
+func test_grass_on_sphere_scatters_on_shell() -> void:
+	var packed := load(GRASS_FIELD_SCENE) as PackedScene
+	var field := packed.instantiate() as GrassField
+	auto_free(field)
+	var surface := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 2.0
+	sphere.height = 4.0
+	surface.mesh = sphere
+	field.add_child(surface)
+	field.surface = field.get_path_to(surface)
+	field.params = GrassParams.new()
+	field.params.max_instances = 100
+	field.params.random_yaw = false
+	add_child(field)
+	await _wait_for_grass_rebuild(field, 100)
+	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
+	assert_int(mm.multimesh.instance_count).is_equal(100)
+	for i in mm.multimesh.instance_count:
+		var xf := mm.multimesh.get_instance_transform(i)
+		var origin := xf.origin
+		var radius := origin.length()
+		assert_float(radius).is_greater_equal(1.9)
+		assert_float(radius).is_less_equal(2.1)
+		if origin.length_squared() > 0.0001:
+			assert_float(origin.normalized().dot(xf.basis.y)).is_greater(0.85)
 
 func test_max_instances_respects_plane_instance_cap() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
@@ -212,8 +280,8 @@ func _build_triangle_mesh() -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	st.add_vertex(Vector3(0.0, 0.0, 0.0))
-	st.add_vertex(Vector3(4.0, 0.0, 0.0))
 	st.add_vertex(Vector3(0.0, 0.0, 4.0))
+	st.add_vertex(Vector3(4.0, 0.0, 0.0))
 	return st.commit()
 
 func _property_names(resource: Resource) -> Array[StringName]:
