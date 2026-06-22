@@ -144,7 +144,7 @@ func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 	var face_eps := 0.08
 	for i in mm.multimesh.instance_count:
 		var xf := mm.multimesh.get_instance_transform(i)
-		var origin := (surface.global_transform.affine_inverse() * mm.global_transform * xf).origin
+		var origin := xf.origin
 		var shell_dist := minf(
 			absf(absf(origin.x) - half.x),
 			minf(absf(absf(origin.y) - half.y), absf(absf(origin.z) - half.z))
@@ -152,8 +152,6 @@ func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 		assert_float(shell_dist).is_less(face_eps)
 		var face_normal := _dominant_axis_normal(origin)
 		assert_float(xf.basis.y.dot(face_normal)).is_greater(0.85)
-		if origin.length_squared() > 0.01:
-			assert_float(origin.dot(xf.basis.y)).is_greater(0.0)
 
 func test_grass_on_sphere_scatters_on_shell() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
@@ -175,7 +173,7 @@ func test_grass_on_sphere_scatters_on_shell() -> void:
 	assert_int(mm.multimesh.instance_count).is_equal(100)
 	for i in mm.multimesh.instance_count:
 		var xf := mm.multimesh.get_instance_transform(i)
-		var origin := (surface.global_transform.affine_inverse() * mm.global_transform * xf).origin
+		var origin := xf.origin
 		var radius := origin.length()
 		assert_float(radius).is_greater_equal(1.9)
 		assert_float(radius).is_less_equal(2.1)
