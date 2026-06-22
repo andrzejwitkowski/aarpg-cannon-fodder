@@ -213,11 +213,6 @@ func _axis_aligned_plane_size() -> Vector2:
 		return (mesh as PlaneMesh).size
 	if mesh.get_class() == "PlaneMesh":
 		return mesh.size
-	var size_value = mesh.get("size")
-	if size_value is Vector2:
-		var plane_size: Vector2 = size_value
-		if plane_size != Vector2.ZERO:
-			return plane_size
 	return Vector2.ZERO
 
 func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionary:
@@ -298,17 +293,12 @@ func _surface_faces() -> PackedVector3Array:
 	if _surface_mesh.mesh == null:
 		return PackedVector3Array()
 	var mesh := _surface_mesh.mesh
+	if mesh is BoxMesh:
+		return _box_mesh_faces((mesh as BoxMesh).size)
 	if mesh is PlaneMesh:
 		return _plane_mesh_faces(mesh as PlaneMesh)
 	if mesh.get_class() == "PlaneMesh":
 		return _plane_mesh_faces_from_size(mesh.size)
-	var size_value = mesh.get("size")
-	if size_value is Vector2:
-		var plane_size: Vector2 = size_value
-		if plane_size != Vector2.ZERO:
-			return _plane_mesh_faces_from_size(plane_size)
-	if mesh is BoxMesh:
-		return _box_mesh_faces((mesh as BoxMesh).size)
 	if mesh is PrimitiveMesh:
 		var arrays := (mesh as PrimitiveMesh).get_mesh_arrays()
 		var primitive_faces := _faces_from_mesh_arrays(arrays)

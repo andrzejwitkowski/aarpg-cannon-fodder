@@ -125,18 +125,20 @@ func test_mesh_surface_sampling_stays_inside_triangle_mesh() -> void:
 
 func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
-	var field := packed.instantiate() as GrassField
-	auto_free(field)
+	var root := Node3D.new()
+	auto_free(root)
+	add_child(root)
 	var surface := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = Vector3(2.0, 2.0, 2.0)
 	surface.mesh = box
-	field.add_child(surface)
+	root.add_child(surface)
+	var field := packed.instantiate() as GrassField
+	root.add_child(field)
 	field.surface = field.get_path_to(surface)
 	field.params = GrassParams.new()
 	field.params.max_instances = 40
 	field.params.random_yaw = false
-	add_child(field)
 	await _wait_for_grass_rebuild(field, 40)
 	var mm := _grass_blades(field)
 	assert_int(mm.multimesh.instance_count).is_equal(40)
@@ -144,7 +146,7 @@ func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 	var max_abs := Vector3.ZERO
 	for i in mm.multimesh.instance_count:
 		var xf := mm.multimesh.get_instance_transform(i)
-		var origin := xf.origin
+		var origin := (surface.global_transform.affine_inverse() * mm.global_transform * xf).origin
 		max_abs.x = maxf(max_abs.x, absf(origin.x))
 		max_abs.y = maxf(max_abs.y, absf(origin.y))
 		max_abs.z = maxf(max_abs.z, absf(origin.z))
@@ -161,25 +163,27 @@ func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 
 func test_grass_on_sphere_scatters_on_shell() -> void:
 	var packed := load(GRASS_FIELD_SCENE) as PackedScene
-	var field := packed.instantiate() as GrassField
-	auto_free(field)
+	var root := Node3D.new()
+	auto_free(root)
+	add_child(root)
 	var surface := MeshInstance3D.new()
 	var sphere := SphereMesh.new()
 	sphere.radius = 2.0
 	sphere.height = 4.0
 	surface.mesh = sphere
-	field.add_child(surface)
+	root.add_child(surface)
+	var field := packed.instantiate() as GrassField
+	root.add_child(field)
 	field.surface = field.get_path_to(surface)
 	field.params = GrassParams.new()
 	field.params.max_instances = 100
 	field.params.random_yaw = false
-	add_child(field)
 	await _wait_for_grass_rebuild(field, 100)
 	var mm := _grass_blades(field)
 	assert_int(mm.multimesh.instance_count).is_equal(100)
 	for i in mm.multimesh.instance_count:
 		var xf := mm.multimesh.get_instance_transform(i)
-		var origin := xf.origin
+		var origin := (surface.global_transform.affine_inverse() * mm.global_transform * xf).origin
 		var radius := origin.length()
 		assert_float(radius).is_greater_equal(1.9)
 		assert_float(radius).is_less_equal(2.1)
