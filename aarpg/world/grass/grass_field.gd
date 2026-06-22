@@ -304,12 +304,31 @@ func _surface_faces() -> PackedVector3Array:
 		if plane_size != Vector2.ZERO:
 			return _plane_mesh_faces_from_size(plane_size)
 	if mesh is PrimitiveMesh:
-		var triangle_mesh := mesh.generate_triangle_mesh()
-		if triangle_mesh != null:
-			return triangle_mesh.get_faces()
+		var arrays := (mesh as PrimitiveMesh).get_mesh_arrays()
+		var primitive_faces := _faces_from_mesh_arrays(arrays)
+		if primitive_faces.size() > 0:
+			return primitive_faces
 	var faces := mesh.get_faces()
 	if faces.size() > 0:
 		return faces
+	var triangle_mesh := mesh.generate_triangle_mesh()
+	if triangle_mesh != null:
+		return triangle_mesh.get_faces()
+	return PackedVector3Array()
+
+func _faces_from_mesh_arrays(arrays: Array) -> PackedVector3Array:
+	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	if verts.is_empty():
+		return PackedVector3Array()
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	if not indices.is_empty():
+		var faces := PackedVector3Array()
+		faces.resize(indices.size())
+		for i in indices.size():
+			faces[i] = verts[indices[i]]
+		return faces
+	if verts.size() >= 3:
+		return verts
 	return PackedVector3Array()
 
 func _plane_mesh_faces_from_size(plane_size: Vector2) -> PackedVector3Array:
