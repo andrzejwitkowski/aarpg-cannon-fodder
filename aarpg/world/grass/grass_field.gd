@@ -169,9 +169,11 @@ func _rebuild_instances() -> void:
 
 func _scatter_blades() -> Dictionary:
 	var max_count := params.max_instances
-	var plane_size := _axis_aligned_plane_size()
-	if plane_size != Vector2.ZERO:
-		return _scatter_plane_stratified(max_count, plane_size)
+	var mesh := _surface_mesh.mesh if _surface_mesh != null else null
+	if mesh is PlaneMesh or (mesh != null and mesh.get_class() == "PlaneMesh"):
+		var plane_size := _axis_aligned_plane_size()
+		if plane_size != Vector2.ZERO:
+			return _scatter_plane_stratified(max_count, plane_size)
 	var transforms: Array[Transform3D] = []
 	var height_scales := PackedFloat32Array()
 	var scatter_data := _surface_scatter_data()
@@ -296,6 +298,11 @@ func _surface_faces() -> PackedVector3Array:
 	if mesh is BoxMesh or mesh.get_class() == "BoxMesh":
 		var box_size: Vector3 = (mesh as BoxMesh).size if mesh is BoxMesh else mesh.size
 		return _box_mesh_faces(box_size)
+	var mesh_size = mesh.get("size")
+	if mesh_size is Vector3:
+		var box_size: Vector3 = mesh_size
+		if box_size != Vector3.ZERO:
+			return _box_mesh_faces(box_size)
 	if mesh is PlaneMesh:
 		return _plane_mesh_faces(mesh as PlaneMesh)
 	if mesh.get_class() == "PlaneMesh":
