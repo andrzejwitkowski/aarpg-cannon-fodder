@@ -43,7 +43,7 @@ func _ready() -> void:
 		_connect_params()
 	_resolve_surface()
 	_rebuild_pending = true
-	_run_rebuild()
+	call_deferred("_run_rebuild")
 
 func _exit_tree() -> void:
 	_disconnect_params()
@@ -413,7 +413,14 @@ func _surface_transform_to_field(surface_transform: Transform3D) -> Transform3D:
 		return surface_transform
 	if _surface_mesh.get_parent() == self and _multimesh_inst.get_parent() == self:
 		return _multimesh_inst.transform.affine_inverse() * _surface_mesh.transform * surface_transform
-	return global_transform.affine_inverse() * (_surface_mesh.global_transform * surface_transform)
+	var mm_parent := _multimesh_inst.get_parent() as Node3D
+	var surface_parent := _surface_mesh.get_parent() as Node3D
+	if mm_parent != null and surface_parent != null:
+		var surface_world := surface_parent.transform * _surface_mesh.transform * surface_transform
+		return mm_parent.transform.affine_inverse() * surface_world
+	if is_inside_tree():
+		return global_transform.affine_inverse() * (_surface_mesh.global_transform * surface_transform)
+	return surface_transform
 
 func _compute_instance_aabb(transforms: Array[Transform3D]) -> AABB:
 	if transforms.is_empty():
