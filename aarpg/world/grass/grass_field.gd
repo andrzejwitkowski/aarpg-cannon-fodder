@@ -256,6 +256,8 @@ func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionar
 func _blade_instance_transform(local_pos: Vector3, yaw: float, align_to_normal: bool, normal: Vector3 = Vector3.UP) -> Transform3D:
 	var basis := _blade_basis(normal, yaw) if align_to_normal else Basis.from_euler(Vector3(0.0, yaw, 0.0))
 	var surface_transform := Transform3D(basis, local_pos)
+	if _surface_mesh != null and _surface_mesh.get_parent() == self:
+		return surface_transform
 	if _multimesh_inst == null or _surface_mesh == null:
 		return surface_transform
 	if _multimesh_inst.get_parent() == _surface_mesh:
@@ -305,6 +307,8 @@ func _surface_faces() -> PackedVector3Array:
 		var plane_size: Vector2 = size_value
 		if plane_size != Vector2.ZERO:
 			return _plane_mesh_faces_from_size(plane_size)
+	if mesh is BoxMesh:
+		return _box_mesh_faces((mesh as BoxMesh).size)
 	if mesh is PrimitiveMesh:
 		var arrays := (mesh as PrimitiveMesh).get_mesh_arrays()
 		var primitive_faces := _faces_from_mesh_arrays(arrays)
@@ -317,6 +321,26 @@ func _surface_faces() -> PackedVector3Array:
 	if triangle_mesh != null:
 		return triangle_mesh.get_faces()
 	return PackedVector3Array()
+
+func _box_mesh_faces(size: Vector3) -> PackedVector3Array:
+	var h := size * 0.5
+	var v := [
+		Vector3(-h.x, -h.y, -h.z), Vector3(h.x, -h.y, -h.z), Vector3(h.x, -h.y, h.z), Vector3(-h.x, -h.y, h.z),
+		Vector3(-h.x, h.y, -h.z), Vector3(h.x, h.y, -h.z), Vector3(h.x, h.y, h.z), Vector3(-h.x, h.y, h.z),
+	]
+	var tri := [
+		0, 2, 1, 0, 3, 2,
+		4, 5, 6, 4, 6, 7,
+		0, 1, 5, 0, 5, 4,
+		2, 3, 7, 2, 7, 6,
+		0, 4, 7, 0, 7, 3,
+		1, 2, 6, 1, 6, 5,
+	]
+	var faces := PackedVector3Array()
+	faces.resize(tri.size())
+	for i in tri.size():
+		faces[i] = v[tri[i]]
+	return faces
 
 func _faces_from_mesh_arrays(arrays: Array) -> PackedVector3Array:
 	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
