@@ -293,8 +293,9 @@ func _surface_faces() -> PackedVector3Array:
 	if _surface_mesh.mesh == null:
 		return PackedVector3Array()
 	var mesh := _surface_mesh.mesh
-	if mesh is BoxMesh:
-		return _box_mesh_faces((mesh as BoxMesh).size)
+	if mesh is BoxMesh or mesh.get_class() == "BoxMesh":
+		var box_size: Vector3 = (mesh as BoxMesh).size if mesh is BoxMesh else mesh.size
+		return _box_mesh_faces(box_size)
 	if mesh is PlaneMesh:
 		return _plane_mesh_faces(mesh as PlaneMesh)
 	if mesh.get_class() == "PlaneMesh":

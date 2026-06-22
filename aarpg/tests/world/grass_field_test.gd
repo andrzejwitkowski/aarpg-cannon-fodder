@@ -131,7 +131,9 @@ func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 	var surface := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = Vector3(2.0, 2.0, 2.0)
-	surface.mesh = box
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.get_mesh_arrays())
+	surface.mesh = mesh
 	root.add_child(surface)
 	var field := packed.instantiate() as GrassField
 	root.add_child(field)
