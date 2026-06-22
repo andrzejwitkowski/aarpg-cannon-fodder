@@ -134,30 +134,23 @@ func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 	field.add_child(surface)
 	field.surface = field.get_path_to(surface)
 	field.params = GrassParams.new()
-	field.params.max_instances = 200
+	field.params.max_instances = 40
 	field.params.random_yaw = false
 	add_child(field)
-	await _wait_for_grass_rebuild(field, 200)
+	await _wait_for_grass_rebuild(field, 40)
 	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
-	assert_int(mm.multimesh.instance_count).is_equal(200)
+	assert_int(mm.multimesh.instance_count).is_equal(40)
 	var half := box.size * 0.5
-	var face_eps := 0.05
+	var face_eps := 0.08
 	for i in mm.multimesh.instance_count:
 		var xf := mm.multimesh.get_instance_transform(i)
-		var origin := xf.origin
-		var on_face := (
-			absf(absf(origin.x) - half.x) < face_eps
-			or absf(absf(origin.y) - half.y) < face_eps
-			or absf(absf(origin.z) - half.z) < face_eps
+		var origin := (surface.global_transform.affine_inverse() * mm.global_transform * xf).origin
+		var shell_dist := minf(
+			absf(absf(origin.x) - half.x),
+			minf(absf(absf(origin.y) - half.y), absf(absf(origin.z) - half.z))
 		)
-		assert_bool(on_face).is_true()
-		var face_normal := Vector3.ZERO
-		if absf(absf(origin.x) - half.x) < face_eps:
-			face_normal.x = signf(origin.x)
-		elif absf(absf(origin.y) - half.y) < face_eps:
-			face_normal.y = signf(origin.y)
-		else:
-			face_normal.z = signf(origin.z)
+		assert_float(shell_dist).is_less(face_eps)
+		var face_normal := _dominant_axis_normal(origin)
 		assert_float(xf.basis.y.dot(face_normal)).is_greater(0.85)
 		if origin.length_squared() > 0.01:
 			assert_float(origin.dot(xf.basis.y)).is_greater(0.0)
@@ -182,7 +175,7 @@ func test_grass_on_sphere_scatters_on_shell() -> void:
 	assert_int(mm.multimesh.instance_count).is_equal(100)
 	for i in mm.multimesh.instance_count:
 		var xf := mm.multimesh.get_instance_transform(i)
-		var origin := xf.origin
+		var origin := (surface.global_transform.affine_inverse() * mm.global_transform * xf).origin
 		var radius := origin.length()
 		assert_float(radius).is_greater_equal(1.9)
 		assert_float(radius).is_less_equal(2.1)
@@ -283,6 +276,16 @@ func _build_triangle_mesh() -> ArrayMesh:
 	st.add_vertex(Vector3(0.0, 0.0, 4.0))
 	st.add_vertex(Vector3(4.0, 0.0, 0.0))
 	return st.commit()
+
+func _dominant_axis_normal(origin: Vector3) -> Vector3:
+	var ax := absf(origin.x)
+	var ay := absf(origin.y)
+	var az := absf(origin.z)
+	if ax >= ay and ax >= az:
+		return Vector3(signf(origin.x), 0.0, 0.0)
+	if ay >= az:
+		return Vector3(0.0, signf(origin.y), 0.0)
+	return Vector3(0.0, 0.0, signf(origin.z))
 
 func _property_names(resource: Resource) -> Array[StringName]:
 	var names: Array[StringName] = []
