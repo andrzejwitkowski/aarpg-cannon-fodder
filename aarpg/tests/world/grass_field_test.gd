@@ -47,11 +47,11 @@ func test_grass_field_placement_on_plane() -> void:
 	field.params.max_instances = 37
 	add_child(field)
 	await _wait_for_grass_rebuild(field, 37)
-	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
+	var mm := _grass_blades(field)
 	assert_object(mm.multimesh).is_not_null()
 	assert_int(mm.multimesh.instance_count).is_equal(37)
 	assert_float(mm.custom_aabb.size.length()).is_greater(0.0)
-	var world_pos := field.global_transform * mm.multimesh.get_instance_transform(0).origin
+	var world_pos := mm.global_transform * mm.multimesh.get_instance_transform(0).origin
 	var half_size := plane.size * 0.5
 	assert_float(world_pos.x).is_greater_equal(-half_size.x)
 	assert_float(world_pos.x).is_less_equal(half_size.x)
@@ -74,7 +74,7 @@ func test_grass_blades_are_owned_by_field() -> void:
 	field.params = GrassParams.new()
 	field.params.max_instances = 64
 	await _wait_for_grass_rebuild(field, 64)
-	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
+	var mm := _grass_blades(field)
 	assert_object(mm).is_not_null()
 	assert_object(mm.get_parent()).is_same(field)
 
@@ -92,9 +92,9 @@ func test_grass_field_placement_spreads_instances_across_plane() -> void:
 	field.params.max_instances = 400
 	add_child(field)
 	await _wait_for_grass_rebuild(field, 400)
-	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
+	var mm := _grass_blades(field)
 	assert_int(mm.multimesh.instance_count).is_equal(400)
-	var world_pos := field.global_transform * mm.multimesh.get_instance_transform(0).origin
+	var world_pos := mm.global_transform * mm.multimesh.get_instance_transform(0).origin
 	var half_size := plane.size * 0.5
 	assert_float(world_pos.x).is_greater_equal(-half_size.x)
 	assert_float(world_pos.x).is_less_equal(half_size.x)
@@ -113,7 +113,7 @@ func test_mesh_surface_sampling_stays_inside_triangle_mesh() -> void:
 	field.params.max_instances = 37
 	add_child(field)
 	await _wait_for_grass_rebuild(field, 37)
-	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
+	var mm := _grass_blades(field)
 	assert_int(mm.multimesh.instance_count).is_equal(37)
 	for i in mm.multimesh.instance_count:
 		var origin := mm.multimesh.get_instance_transform(i).origin
@@ -138,7 +138,7 @@ func test_grass_on_box_scatters_on_faces_with_normals() -> void:
 	field.params.random_yaw = false
 	add_child(field)
 	await _wait_for_grass_rebuild(field, 40)
-	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
+	var mm := _grass_blades(field)
 	assert_int(mm.multimesh.instance_count).is_equal(40)
 	var half := box.size * 0.5
 	var max_abs := Vector3.ZERO
@@ -175,7 +175,7 @@ func test_grass_on_sphere_scatters_on_shell() -> void:
 	field.params.random_yaw = false
 	add_child(field)
 	await _wait_for_grass_rebuild(field, 100)
-	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
+	var mm := _grass_blades(field)
 	assert_int(mm.multimesh.instance_count).is_equal(100)
 	for i in mm.multimesh.instance_count:
 		var xf := mm.multimesh.get_instance_transform(i)
@@ -200,7 +200,7 @@ func test_max_instances_respects_plane_instance_cap() -> void:
 	field.params.max_instances = 100
 	add_child(field)
 	await _wait_for_grass_rebuild(field, 100)
-	var mm := field.get_node("GrassBlades") as MultiMeshInstance3D
+	var mm := _grass_blades(field)
 	assert_int(mm.multimesh.instance_count).is_equal(100)
 
 func test_runtime_without_interaction_uses_no_interactors() -> void:
@@ -257,9 +257,12 @@ func after() -> void:
 func _wait_for_grass_rebuild(field: GrassField, expected_count: int) -> void:
 	for _i in 120:
 		await await_idle_frame()
-		var mm := field.get_node_or_null("GrassBlades") as MultiMeshInstance3D
+		var mm := _grass_blades(field)
 		if mm != null and mm.multimesh != null and mm.multimesh.instance_count == expected_count:
 			return
+
+func _grass_blades(field: GrassField) -> MultiMeshInstance3D:
+	return field.find_child("GrassBlades", true, false) as MultiMeshInstance3D
 
 func _cleanup_test_players() -> void:
 	for node in get_tree().get_nodes_in_group(PlayerUtils.GROUP):

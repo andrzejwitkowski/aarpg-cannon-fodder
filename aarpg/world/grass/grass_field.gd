@@ -83,12 +83,15 @@ func _ensure_multimesh() -> void:
 		_multimesh_inst = MultiMeshInstance3D.new()
 		_multimesh_inst.name = "GrassBlades"
 	_multimesh_inst.material_override = _material
-	if _multimesh_inst.get_parent() == self:
+	var parent: Node = self
+	if _surface_mesh != null and _surface_mesh.get_parent() == self:
+		parent = _surface_mesh
+	if _multimesh_inst.get_parent() == parent:
 		return
 	if _multimesh_inst.get_parent() != null:
-		_multimesh_inst.reparent(self)
+		_multimesh_inst.reparent(parent)
 	else:
-		add_child(_multimesh_inst)
+		parent.add_child(_multimesh_inst)
 
 func _cleanup_orphan_blades() -> void:
 	for node: Node in get_children():
@@ -255,9 +258,8 @@ func _blade_instance_transform(local_pos: Vector3, yaw: float, align_to_normal: 
 	var surface_transform := Transform3D(basis, local_pos)
 	if _multimesh_inst == null or _surface_mesh == null:
 		return surface_transform
-	var mm_parent := _multimesh_inst.get_parent()
-	if mm_parent != null and mm_parent == _surface_mesh.get_parent():
-		return _multimesh_inst.transform.affine_inverse() * _surface_mesh.transform * surface_transform
+	if _multimesh_inst.get_parent() == _surface_mesh:
+		return surface_transform
 	return _surface_transform_to_field(surface_transform)
 
 func _surface_scatter_data() -> Dictionary:
