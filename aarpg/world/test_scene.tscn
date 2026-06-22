@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://bj7n3qt2ai20" path="res://world/grass/grass_params.gd" id="7_fbogg"]
 [ext_resource type="PackedScene" uid="uid://d3xebo3hp1l3y" path="res://world/rain/rain_glass_overlay.tscn" id="8_rain"]
 [ext_resource type="PackedScene" uid="uid://d3xd0f7jx5e3y" path="res://world/rain/rain_emitter.tscn" id="9_rain"]
+[ext_resource type="PackedScene" path="res://world/occlusion/test_wall.tscn" id="11_wall"]
 [ext_resource type="Script" uid="uid://d4av1dc3md3xe" path="res://world/rain/rain_params.gd" id="10_xhtyf"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_world"]
@@ -128,6 +129,9 @@ shadow_enabled = true
 
 [node name="Player" parent="." unique_id=1709576158 instance=ExtResource("1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.058925, 1.797893)
+
+[node name="TestWall" parent="." instance=ExtResource("11_wall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 5.5)
 
 [node name="CameraPivot" parent="." unique_id=521553860 instance=ExtResource("2")]
 

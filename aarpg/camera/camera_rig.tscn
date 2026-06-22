@@ -1,9 +1,13 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://camera/camera_pivot.gd" id="1"]
+[ext_resource type="Script" path="res://camera/occlusion_reveal.gd" id="2"]
 
 [node name="CameraPivot" type="Node3D"]
 script = ExtResource("1")
+
+[node name="OcclusionReveal" type="Node" parent="."]
+script = ExtResource("2")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="."]
 rotation_degrees = Vector3(-60, 180, 0)
