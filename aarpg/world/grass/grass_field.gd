@@ -253,9 +253,11 @@ func _scatter_plane_stratified(max_count: int, plane_size: Vector2) -> Dictionar
 func _blade_instance_transform(local_pos: Vector3, yaw: float, align_to_normal: bool, normal: Vector3 = Vector3.UP) -> Transform3D:
 	var basis := _blade_basis(normal, yaw) if align_to_normal else Basis.from_euler(Vector3(0.0, yaw, 0.0))
 	var surface_transform := Transform3D(basis, local_pos)
-	if _multimesh_inst != null and _surface_mesh.get_parent() == self and _multimesh_inst.get_parent() == self:
-		var world := _surface_mesh.global_transform * surface_transform
-		return _multimesh_inst.global_transform.affine_inverse() * world
+	if _multimesh_inst == null or _surface_mesh == null:
+		return surface_transform
+	var mm_parent := _multimesh_inst.get_parent()
+	if mm_parent != null and mm_parent == _surface_mesh.get_parent():
+		return _multimesh_inst.transform.affine_inverse() * _surface_mesh.transform * surface_transform
 	return _surface_transform_to_field(surface_transform)
 
 func _surface_scatter_data() -> Dictionary:
